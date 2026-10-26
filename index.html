@@ -273,6 +273,32 @@ pre.code{margin:0; padding:14px; background:var(--bg-mid); border:1px solid var(
   *{animation:none !important; transition:none !important; scroll-behavior:auto !important;}
 }
 
+/* ---------- v2 ---------- */
+.term{border-bottom:1px dotted var(--accent); cursor:help;}
+.term:hover{color:var(--text);}
+#tip{position:fixed; z-index:130; max-width:min(320px, calc(100vw - 16px)); padding:10px 12px; border-radius:10px; background:var(--bg-elev); border:1px solid var(--border-bright); box-shadow:var(--shadow); font-size:12.5px; line-height:1.5; color:var(--text-2); pointer-events:none; opacity:0; transform:translateY(4px); transition:opacity .12s, transform .12s; top:0; left:0;}
+#tip.show{opacity:1; transform:none;}
+#tip b{display:block; color:var(--accent); font:600 11px var(--font-mono); letter-spacing:.06em; margin-bottom:4px; text-transform:uppercase;}
+.node.dimmed{opacity:.45;}
+.chips{display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;}
+.chip{font:600 10px var(--font-mono); padding:2px 6px; border-radius:5px; border:1px solid var(--border-bright); color:var(--text-2); background:var(--glass);}
+.badge{display:inline-block; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; font:600 10.5px var(--font-mono); padding:2px 8px; border-radius:999px; background:var(--glass); border:1px solid var(--border-bright); color:var(--gold);}
+.ctrl-row{display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-bottom:12px;}
+.ctrl-row .arch-ctrl{margin-bottom:0;}
+.ctrl-label{font:600 10.5px var(--font-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-right:4px;}
+.tilemap{display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:4px; max-width:600px;}
+.st{aspect-ratio:1; border-radius:6px; display:grid; place-items:center; font:600 10.5px var(--font-mono); background:var(--glass); color:var(--muted); border:1px solid var(--border); min-width:0;}
+.st.on{background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:var(--inverse); border-color:transparent; cursor:pointer;}
+.st.ny{border:2px solid var(--gold); color:var(--gold); cursor:pointer; background:var(--glass);}
+.st[data-state]:hover{transform:scale(1.08);}
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:12px;}
+.legend i{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:6px;}
+.legend .l-on{background:linear-gradient(135deg,var(--accent),var(--accent-2));}
+.legend .l-ny{border:2px solid var(--gold);}
+.legend .l-off{background:var(--glass); border:1px solid var(--border);}
+.callout{border-left:3px solid var(--gold); padding:12px 14px; background:var(--glass); border-radius:0 var(--r-md) var(--r-md) 0; color:var(--text-2); font-size:13.5px;}
+@media (max-width:560px){ .tilemap{gap:2px;} .st{font-size:8px; border-radius:4px;} }
+
 </style>
 </head>
 <body>
@@ -282,7 +308,7 @@ pre.code{margin:0; padding:14px; background:var(--bg-mid); border:1px solid var(
       <div class="brand-mark">MFA</div>
       <div>
         <div class="brand-name">Okta MFA · PeopleSoft Financials</div>
-        <div class="brand-sub">Command Center · v1</div>
+        <div class="brand-sub">Command Center · v2</div>
       </div>
     </div>
     <nav id="nav"></nav>
@@ -307,7 +333,7 @@ pre.code{margin:0; padding:14px; background:var(--bg-mid); border:1px solid var(
     <section id="overview">
       <div class="glass hero">
         <div>
-          <div class="eyebrow">Implementation command center · v1</div>
+          <div class="eyebrow">Implementation command center · v2</div>
           <h1 style="margin-top:8px">Okta multifactor authentication for PeopleSoft Financials 9.2</h1>
           <p class="lead">How I would run a 30-month Okta MFA rollout for a multi-agency PeopleSoft Financials environment as a technical resource to the existing project team — from current-state assessment and pattern decision through testing, enforcement waves, stabilization, and hand-off to operations.</p>
           <div class="tags">
@@ -316,6 +342,9 @@ pre.code{margin:0; padding:14px; background:var(--bg-mid); border:1px solid var(
             <span class="tag-pill">NIST SP 800-63B AAL2 / AAL3</span>
             <span class="tag-pill">NIST 800-53 IA · AC · AU</span>
             <span class="tag-pill">NYS ITS identity standards</span>
+            <span class="tag-pill">Microsoft Entra ID coexistence</span>
+            <span class="tag-pill">OCI · AWS · Azure · Google Cloud</span>
+            <span class="tag-pill">10 state governments</span>
           </div>
           <div class="hero-actions">
             <a class="btn primary" href="#decision">Score the integration patterns</a>
@@ -332,23 +361,34 @@ pre.code{margin:0; padding:14px; background:var(--bg-mid); border:1px solid var(
             <div><b>Location</b><span>Albany, NY · 50% on-site · candidate newly relocated to Tarrytown, NY</span></div>
             <div><b>Term</b><span>30 months · eight phases</span></div>
             <div><b>Candidate</b><span>Kenneth P. Barnes · CISSP · Okta Certified Professional · worked at PeopleSoft</span></div>
+            <div><b>Public sector</b><span>State government experience in TX, HI, IL, IN, WI, SC, NC, AZ, FL, PA</span></div>
+            <div><b>Clouds</b><span>AWS 20+ yrs · Azure 18+ yrs · Google Cloud · Oracle OCI</span></div>
           </div>
         </div>
       </div>
-      <div class="grid g6" id="kpis" style="margin-top:14px"></div>
+      <div class="grid g4" id="kpis" style="margin-top:14px"></div>
     </section>
 
     <!-- ARCHITECTURE -->
     <section id="architecture">
       <div class="sec-head">
         <div><div class="eyebrow">Design</div><h2>Sign-on architecture</h2>
-          <p>Choose a pattern to redraw the flow. Click any component for its nine-part detail. The red dashed path is the direct-to-PeopleSoft route that must be closed.</p></div>
+          <p>Choose a pattern and a hosting option to redraw the flow. Click any component for its nine-part detail; hover or tap underlined terms for a definition. The red dashed path is the direct-to-PeopleSoft route that must be closed.</p></div>
       </div>
       <div class="glass pad">
-        <div class="arch-ctrl" role="group" aria-label="Integration pattern">
-          <button class="seg" type="button" data-pat="A" aria-pressed="false">A · Native SAML 2.0</button>
-          <button class="seg" type="button" data-pat="B" aria-pressed="true">B · Okta Access Gateway</button>
-          <button class="seg" type="button" data-pat="C" aria-pressed="false">C · Web-tier agent</button>
+        <div class="ctrl-row">
+          <div class="arch-ctrl" role="group" aria-label="Integration pattern"><span class="ctrl-label">Pattern</span>
+            <button class="seg" type="button" data-pat="A" aria-pressed="false">A · Native SAML 2.0</button>
+            <button class="seg" type="button" data-pat="B" aria-pressed="true">B · Okta Access Gateway</button>
+            <button class="seg" type="button" data-pat="C" aria-pressed="false">C · Web-tier agent</button>
+            <button class="seg" type="button" data-pat="E" aria-pressed="false">E · Entra ID + F5 (reference)</button>
+          </div>
+          <div class="arch-ctrl" role="group" aria-label="Hosting"><span class="ctrl-label">Hosting</span>
+            <button class="seg" type="button" data-host="onprem" aria-pressed="true">On-prem</button>
+            <button class="seg" type="button" data-host="oci" aria-pressed="false">OCI</button>
+            <button class="seg" type="button" data-host="aws" aria-pressed="false">AWS</button>
+            <button class="seg" type="button" data-host="azure" aria-pressed="false">Azure</button>
+          </div>
         </div>
         <div class="arch-wrap"><svg id="arch" viewBox="0 0 1000 450" role="img" aria-label="Sign-on architecture diagram"></svg></div>
         <p class="arch-note" id="archNote"></p>
@@ -385,6 +425,59 @@ pre.code{margin:0; padding:14px; background:var(--bg-mid); border:1px solid var(
         <div style="min-width:220px"><div class="hint" id="chkCount">0 of 24 answered</div><div class="progress"><span id="chkBar" style="width:0%"></span></div></div>
       </div>
       <div class="grid g3" id="checks"></div>
+    </section>
+
+    <!-- ENTRA (v2) -->
+    <section id="entra">
+      <div class="sec-head">
+        <div><div class="eyebrow">Platforms</div><h2>Microsoft Entra ID coexistence</h2>
+          <p>Most state agencies run Microsoft 365 on Entra ID. The design has to decide which system performs MFA for which application, so users see one prompt and auditors see one owner. Click a model for its nine-part detail.</p></div>
+      </div>
+      <div class="grid g4" id="entraModels"></div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="glass pad">
+          <h3 style="margin-bottom:10px">Which model fits?</h3>
+          <div class="tree" id="entraPick"></div>
+        </div>
+        <div class="glass pad">
+          <h3 style="margin-bottom:10px">Entra ID controls in the design</h3>
+          <div class="tbl-wrap"><table><thead><tr><th>Control</th><th>Why it matters here</th><th>Where I have done it</th></tr></thead><tbody id="entraCtl"></tbody></table></div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:14px"><b>Entra ID experience:</b> SAML and OIDC SSO, Conditional Access, MFA, and PIM for 12,000+ identities at Texas DPS under CJIS, including Entra ID integrated with F5 BIG-IP LTM / APM for SSO to published applications; Entra External ID B2B with Conditional Access for the CureSMA board portal; per-agent Entra Agent ID with Conditional Access at Humana; Conditional Access as code through Microsoft Graph (GraphAPIConfig-2); Microsoft SC-300, SC-100, and AZ-500.</div>
+    </section>
+
+    <!-- CLOUD (v2) -->
+    <section id="cloud">
+      <div class="sec-head">
+        <div><div class="eyebrow">Platforms</div><h2>Oracle OCI &amp; multi-cloud hyperscalers</h2>
+          <p>PeopleSoft may run on premises, on OCI, or on AWS or Azure, and the clouds around it hold logs, keys, and integrations. The MFA standard has to cover every console that can change the environment. Use the hosting switch on the architecture diagram to see the path change.</p></div>
+      </div>
+      <div class="grid g4" id="clouds"></div>
+      <div class="grid g3" id="ociCards" style="margin-top:14px"></div>
+      <div class="glass pad" style="margin-top:14px">
+        <h3 style="margin-bottom:10px">Control map across the hyperscalers</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>Control</th><th>Oracle OCI</th><th>AWS</th><th>Azure</th><th>Google Cloud</th></tr></thead><tbody id="cloudMatrix"></tbody></table></div>
+        <p class="hint" style="margin-top:10px">Oracle Database@Azure, Oracle Database@AWS, and Oracle Database@Google Cloud run Oracle database services inside the other hyperscalers’ data centers, which widens where a PeopleSoft database can sit. Confirm regional availability for your agency.</p>
+      </div>
+    </section>
+
+    <!-- STATES (v2) -->
+    <section id="states">
+      <div class="sec-head">
+        <div><div class="eyebrow">Reach</div><h2>State government experience</h2>
+          <p>Ten states, plus 8 government agencies and additional state agencies on PeopleSoft programs. Hover or tap a highlighted state for details. New York is outlined as this engagement.</p></div>
+        <div class="tb-actions"><button class="btn" type="button" data-drill="states">Open detail</button></div>
+      </div>
+      <div class="grid g2">
+        <div class="glass pad">
+          <div class="tilemap" id="tilemap" aria-label="United States tile map of state government experience"></div>
+          <div class="legend"><span><i class="l-on"></i>State government experience</span><span><i class="l-ny"></i>This engagement · Albany, NY</span><span><i class="l-off"></i>Other states</span></div>
+        </div>
+        <div class="glass pad">
+          <div class="tbl-wrap"><table><thead><tr><th>State</th><th>Name</th><th>Experience</th></tr></thead><tbody id="stateList"></tbody></table></div>
+        </div>
+      </div>
     </section>
 
     <!-- POLICY -->
@@ -592,9 +685,10 @@ SELECT OPRID, OPRDEFNDESC, LASTSIGNONDTTM
         <div><div class="eyebrow">Candidate</div><h2>Kenneth P. Barnes</h2>
           <p>Enterprise Security Architect · Founder, CTO &amp; CISO of UCS Solutions (est. 1993) · 400+ engagements.</p></div>
       </div>
-      <div class="grid g3">
+      <div class="grid g4">
         <div class="glass pad"><h3>PeopleSoft</h3><p class="muted" style="margin-top:6px">Worked at PeopleSoft and directly for customers implementing and migrating PeopleSoft Financials, HR, and Student (Campus Solutions): 6 higher-education institutions, 8 government agencies, additional state agencies, and manufacturers including Altria and Navistar International. Authored the PeopleSoft 9.2 → Oracle Fusion Cloud architecture for Jack Henry.</p></div>
         <div class="glass pad"><h3>Identity &amp; MFA</h3><p class="muted" style="margin-top:6px">Okta SSO, MFA, Lifecycle Management, and Workflows. SAML / OIDC federation, Conditional Access, MFA, and PIM for 12,000+ identities at Texas DPS under CJIS. 60+ Zero Trust implementations. CISSP, Okta Certified Professional, SABSA Master.</p></div>
+        <div class="glass pad"><h3>Public sector &amp; cloud</h3><p class="muted" style="margin-top:6px">State government experience in Texas, Hawaii, Illinois, Indiana, Wisconsin, South Carolina, North Carolina, Arizona, Florida, and Pennsylvania. Hyperscalers: AWS 20+ years including GovCloud, Azure 18+ years, Google Cloud, and Oracle OCI. Entra ID for 12,000+ identities at Texas DPS.</p></div>
         <div class="glass pad"><h3>Availability</h3><p class="muted" style="margin-top:6px">Newly relocated to Tarrytown, NY, residing there 50% of the time and available 50% on-site in Albany for the full 30 months. U.S. citizen. W-2, 1099, or C2C through UCS Solutions.</p>
           <div class="hero-actions"><a class="btn" href="https://github.com/kennyb7322" target="_blank" rel="noopener">github.com/kennyb7322 ↗</a></div></div>
       </div>
@@ -613,7 +707,7 @@ SELECT OPRID, OPRDEFNDESC, LASTSIGNONDTTM
           <span>804-356-5505</span>
         </div>
         <div class="ucs-footer-meta">
-          <span class="ucs-footer-version">v1</span>
+          <span class="ucs-footer-version">v2</span>
           <span class="ucs-footer-date">October 26, 2026</span>
         </div>
       </div>
@@ -624,6 +718,8 @@ SELECT OPRID, OPRDEFNDESC, LASTSIGNONDTTM
     </footer>
   </main>
 </div>
+
+<div id="tip" role="tooltip" aria-hidden="true"></div>
 
 <div id="modal-root" class="modal-root" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
   <div class="modal-backdrop" data-close></div>
@@ -1388,6 +1484,357 @@ const TELEMETRY = {
 };
 
 /* ============================================================
+   v2 additions — Entra ID coexistence · Oracle OCI & multi-cloud ·
+   state government experience · glossary popovers
+   ============================================================ */
+
+Object.assign(DRILL, {
+  /* ---------- architecture (v2) ---------- */
+  'node-entra': { eyebrow: 'Architecture · Microsoft identity', title: 'Microsoft Entra ID', s: [
+    'Microsoft’s identity platform, which most state agencies already run for Microsoft 365, Windows sign-in, and Azure administration.',
+    'Users and groups sync from Active Directory with Entra Connect or Cloud Sync. Entra ID then feeds users to Okta, trusts Okta as a federated identity provider, or is itself the identity provider that Okta or a gateway trusts.',
+    'Microsoft 365, the Azure portal, Entra-joined devices, and any application federated to Entra ID.',
+    'Avoiding two MFA prompts and two authenticator apps for the same person, and keeping one policy owner per application.',
+    'With the Microsoft 365 domain federated to Okta and federatedIdpMfaBehavior set to enforceMfaByFederatedIdp, a user who completes Okta MFA is not prompted again by Entra ID.',
+    'Directory sync health, the domain federation decision, the Conditional Access policy inventory, and Entra ID P1 / P2 licensing for Conditional Access and PIM.',
+    'Feeds the Okta groups that drive PeopleSoft populations; Entra sign-in logs join Okta and PeopleSoft logs in the SIEM.',
+    'From assessment. The coexistence model is decided in design, before the pilot.',
+    'Converge on one primary identity provider over time and use the other only where it adds something the first cannot.',
+  ] },
+  'node-admin': { eyebrow: 'Architecture · Cloud administration', title: 'Cloud administration plane', s: [
+    'The consoles and APIs that administer wherever PeopleSoft runs: OCI IAM identity domains on OCI, IAM Identity Center on AWS, Entra ID and Azure RBAC on Azure, or jump hosts and PAM on premises.',
+    'Administrators reach the console through federation from Okta or Entra ID, with phishing-resistant MFA and just-in-time elevation. Emergency cloud accounts are vaulted.',
+    'PeopleSoft Cloud Manager on OCI, infrastructure changes, database and middleware administration.',
+    'Holding the people who can rebuild the PeopleSoft environment to at least the same MFA standard as PeopleSoft administrators.',
+    'An OCI administrator signs in to the OCI console through an identity domain that trusts Okta over SAML; Okta applies the privileged-administrator rule.',
+    'A federation trust per cloud, admin group mapping, vaulted emergency credentials.',
+    'Privileged-access reviews, cloud audit logs in the SIEM, Cloud Manager and infrastructure-as-code pipelines.',
+    'Before the pilot, because infrastructure access is a way around application MFA.',
+    'Workload identity federation for pipelines so no long-lived cloud keys remain.',
+  ] },
+  'pat-E': { eyebrow: 'Reference pattern E', title: 'Entra ID + F5 BIG-IP APM (header-based)', s: [
+    'A Microsoft-documented pattern in which F5 BIG-IP Access Policy Manager is the SAML service provider in front of PeopleSoft and Microsoft Entra ID is the identity provider.',
+    'BIG-IP sends users to Entra ID for authentication and Conditional Access, then injects the user identity in an HTTP header (Microsoft’s guide uses PS_SSO_UID). The delivered OAMSSO_AUTHENTICATION sign-on PeopleCode trusts it, with a low-privilege public-access user ID on the web profile.',
+    'Organizations that standardize on Entra ID instead of Okta, or that already run BIG-IP APM in front of PeopleSoft.',
+    'Bringing Entra Conditional Access and authentication strengths to PeopleSoft without code changes.',
+    'At Texas DPS I integrated Entra ID with F5 BIG-IP LTM / APM for SSO to published applications, with zero-downtime cutovers automated through Ansible and Terraform. The mechanics are the same.',
+    'BIG-IP APM licensing, an Entra ID enterprise application, header trust restricted to the BIG-IP, and an iRule for SP-initiated logout.',
+    'Shares the header-trust and bypass-path controls of pattern B; Entra sign-in logs replace Okta System Log for this application.',
+    'Shown for coexistence planning. This engagement specifies Okta, so pattern E applies only if the organization changes direction or needs an interim path.',
+    'Either gateway can later give way to native SAML 2.0 in PeopleTools 8.63 with whichever identity provider is chosen.',
+  ] },
+
+  /* ---------- corrected / extended v1 entries ---------- */
+  'ps-signon': { eyebrow: 'PeopleSoft mapping', title: 'Sign-on PeopleCode', s: [
+    'The PeopleCode registered on the Signon PeopleCode page that decides whether a sign-in succeeds.',
+    'For gateway patterns PeopleSoft delivers OAMSSO_AUTHENTICATION (in FUNCLIB_LDAP) to accept a trusted identity header, with a low-privilege public-access user ID set on the web profile. Microsoft’s Entra ID + F5 guide and Oracle’s OCI IAM guide both use it. Added checks confirm the request came from the gateway and refuse unknown or locked users. There is no password fallback.',
+    'The application server, at every sign-in.',
+    'Header trust, refusal of unknown users, audit logging.',
+    'A request carrying the header but arriving from a non-gateway address is refused and logged (TC-54).',
+    'PeopleTools developer access in non-production, code review, and a header name agreed with the gateway (for example PS_SSO_UID).',
+    'Gateway configuration, load-balancer rules, and web profile public-access settings.',
+    'Patterns B, C, and E.',
+    'Retired after a move to native SAML 2.0 in PeopleTools 8.63.',
+  ] },
+  'pat-C': { eyebrow: 'Pattern C', title: 'Web-tier agent or Oracle gateway', s: [
+    'An access manager in front of the PeopleSoft web tier — Oracle Access Manager WebGate, the OCI IAM App Gateway, or an Okta partner gateway — that authenticates the user before PeopleSoft sees the request.',
+    'The agent intercepts requests, authenticates the user directly or by federating to Okta, then passes identity in a header to the delivered OAMSSO_AUTHENTICATION sign-on PeopleCode.',
+    'Organizations that already run OAM or OCI IAM for other Oracle applications.',
+    'Reusing existing Oracle identity infrastructure and skills.',
+    'Oracle documents OCI IAM with its App Gateway as a PeopleSoft single sign-on and MFA solution. Federating OCI IAM to Okta keeps Okta as the workforce identity provider.',
+    'The existing component, its support contract, and the skills to run it.',
+    'Two identity systems in the path make troubleshooting harder; logs from both are needed.',
+    'Only when the component already exists and is supported.',
+    'Usually a stepping stone to pattern A or B.',
+  ] },
+
+  /* ---------- Entra coexistence ---------- */
+  'entra-m1': { eyebrow: 'Entra coexistence · Model 1', title: 'Entra ID as the user source for Okta', s: [
+    'Okta imports users and groups from Entra ID (or from Active Directory through the Okta AD agent) and is the identity provider and MFA authority for PeopleSoft.',
+    'Directory changes flow into Okta; group rules place users in PeopleSoft populations; Okta policies decide MFA strength. Microsoft 365 sign-in is unchanged.',
+    'Agencies where Entra ID runs Microsoft 365 on its own and Okta is introduced for PeopleSoft and other line-of-business applications.',
+    'The fastest path for this engagement.',
+    'A finance user signs in to Outlook with Entra ID and Microsoft Authenticator, and to PeopleSoft with Okta Verify.',
+    'Directory attribute quality, including the OPRID attribute.',
+    'Users may carry two authenticator apps, so communications must say which prompt belongs to which system.',
+    'When Okta is new to the organization and PeopleSoft MFA cannot wait for a wider identity decision.',
+    'Move to model 2 or 3 later so users get one prompt for everything.',
+  ] },
+  'entra-m2': { eyebrow: 'Entra coexistence · Model 2', title: 'Okta as federated IdP for Microsoft 365', s: [
+    'Okta is the identity provider for both PeopleSoft and the Microsoft 365 domain; Entra ID trusts Okta through domain federation.',
+    'The domain is federated through Okta’s WS-Federation Office 365 app. With the Okta MFA from Microsoft Entra ID option on and federatedIdpMfaBehavior set to enforceMfaByFederatedIdp, Entra ID accepts the MFA performed in Okta.',
+    'Organizations that already use Okta for Microsoft 365 sign-in.',
+    'One sign-in, one MFA prompt, and one authenticator for Microsoft 365 and PeopleSoft.',
+    'A user completes Okta Verify once in the morning and reaches both Teams and PeopleSoft without another prompt.',
+    'Okta must perform MFA for the Office 365 app; with Entra MFA required and Okta MFA off, users hit a sign-in loop.',
+    'Entra Conditional Access still evaluates device and location; Okta owns the MFA step.',
+    'When Okta already federates the domain, or the organization chooses Okta as the primary workforce identity provider.',
+    'Okta FastPass and Windows Hello for Business can satisfy both systems with phishing-resistant sign-in.',
+  ] },
+  'entra-m3': { eyebrow: 'Entra coexistence · Model 3', title: 'Entra ID as upstream IdP to Okta', s: [
+    'Entra ID stays the primary identity provider and MFA authority; Okta trusts Entra ID as an external identity provider and still applies the PeopleSoft application policy.',
+    'Okta identity-provider routing sends users to Entra ID for primary sign-in; Okta then evaluates its PeopleSoft policy, which can accept the session or require an Okta factor for privileged roles.',
+    'Microsoft-centric agencies that want Okta’s PeopleSoft integration, including Okta Access Gateway, without moving primary sign-in.',
+    'Keeping Microsoft Authenticator and Conditional Access as the user experience while gaining Okta’s PeopleSoft integration.',
+    'A general user signs in with Entra ID and reaches PeopleSoft; a security administrator is also prompted for a FIDO2 key by the Okta rule.',
+    'An Entra ID enterprise application for Okta, claims mapping (including the OPRID attribute), and routing rules.',
+    'Audit evidence must show which system performed which factor, in both log sources.',
+    'When Entra ID is the declared primary identity provider but the engagement must still deliver Okta MFA for PeopleSoft.',
+    'Passing authentication context from Entra to Okta removes any duplicate prompt for general users.',
+  ] },
+  'entra-ca': { eyebrow: 'Entra ID control', title: 'Conditional Access & authentication strengths', s: [
+    'Entra ID policies that decide, per application and user group, what a sign-in must satisfy: MFA, a compliant device, an allowed location, or a phishing-resistant authentication strength.',
+    'Policies evaluate user, group, app, device, location, and sign-in risk, then grant, block, or require controls. Authentication strengths name exactly which methods count.',
+    'Microsoft 365, Azure administration, and any app federated to Entra ID — including PeopleSoft in model 3 or pattern E.',
+    'Phishing-resistant MFA for administrators, blocking legacy authentication, restricting admin portals to managed devices.',
+    'At Texas DPS: Conditional Access, MFA, and PIM for a 12,000+ identity public-safety environment under CJIS.',
+    'Entra ID P1 (P2 for risk-based policies), group design, emergency-account exclusions.',
+    'Must not compete with Okta policies: one system owns the MFA decision for each application.',
+    'From design, whatever coexistence model is chosen.',
+    'Continuous access evaluation shortens how long a revoked session stays usable.',
+  ] },
+  'entra-pim': { eyebrow: 'Entra ID control', title: 'Privileged Identity Management', s: [
+    'Just-in-time, time-bound elevation for Entra ID and Azure roles, with approval, justification, and access reviews.',
+    'Eligible users activate a role for a set period with MFA and approval; every activation is logged and reviewed.',
+    'Entra and Azure administrators, including those who manage the Okta federation, Microsoft 365, or PeopleSoft hosted on Azure.',
+    'Removing standing administrator access around the identity systems PeopleSoft depends on.',
+    'Implemented at Texas DPS alongside Conditional Access and MFA.',
+    'Entra ID P2 or Entra ID Governance licensing.',
+    'Okta administrator roles need an equivalent control, reviewed on the same cadence.',
+    'Before the pilot.',
+    'Extend just-in-time elevation to PeopleSoft security administration through access requests.',
+  ] },
+  'entra-gov': { eyebrow: 'Entra ID control', title: 'Access reviews & group governance', s: [
+    'Recertification of the groups that decide PeopleSoft populations and privileged access, using Entra ID Governance, SailPoint, or Okta Identity Governance.',
+    'Group owners confirm membership on a schedule; removals flow to Okta and so to the PeopleSoft policy applied at the next sign-in.',
+    'PS-Privileged, PS-Approvers, PS-Emergency, and exception groups.',
+    'Meeting the six-month privileged-access review requirement with evidence.',
+    'A quarterly review of PS-Approvers removes users who changed jobs.',
+    'Named group owners and a review cadence agreed with the security office.',
+    'The PeopleSoft role queries in sql/ps-security-audit.sql confirm that group and role memberships agree.',
+    'From the first production wave.',
+    'Drive group membership from PeopleSoft role changes automatically.',
+  ] },
+  'entra-logs': { eyebrow: 'Entra ID control', title: 'Entra sign-in & audit logs', s: [
+    'Entra ID sign-in, audit, and risk logs streamed to the SIEM next to Okta System Log and PeopleSoft sign-on audit records.',
+    'Diagnostic settings export logs to Log Analytics and Microsoft Sentinel, or to an event hub for another SIEM; detections correlate the three sources by user and time.',
+    'Security operations and audit.',
+    'Showing which system performed MFA for each PeopleSoft sign-in, and spotting risky sign-ins upstream of Okta.',
+    'In model 3 a PeopleSoft sign-in is traced from the Entra sign-in event through the Okta policy evaluation to PSACCESSLOG.',
+    'Log retention of at least one year and synchronized clocks.',
+    'Feeds the bypass and MFA-fatigue detections.',
+    'Before the pilot.',
+    'One identity timeline per user across all three sources.',
+  ] },
+
+  /* ---------- hyperscalers ---------- */
+  'cloud-oci': { eyebrow: 'Hyperscaler', title: 'Oracle Cloud Infrastructure (OCI)', s: [
+    'Oracle’s cloud and the platform Oracle targets first for PeopleSoft: PeopleTools 8.63 became generally available on OCI in July 2026, ahead of on-premises.',
+    'PeopleSoft Cloud Manager provisions and patches PeopleSoft on OCI; OCI IAM identity domains control console access and can federate to Okta or Entra ID; Oracle also documents OCI IAM as a PeopleSoft single sign-on and MFA option.',
+    'PeopleSoft and Oracle Database hosting, Fusion Cloud applications, and Oracle Database@Azure, @AWS, and @Google Cloud.',
+    'Running PeopleSoft where new PeopleTools releases arrive first, with a federated, guarded admin plane.',
+    'OCI conversions and migrations (NTT DATA), OCI architecture (WME), Oracle on-premises and OCI migration architecture (Wipro / Logicalis), and the Jack Henry PeopleSoft 9.2 → Fusion architecture with Entra ID ⇄ OCI IAM federation.',
+    'Tenancy and compartment design, identity-domain federation, FastConnect or VPN, Vault keys.',
+    'Okta stays the PeopleSoft identity provider; OCI IAM governs console and Cloud Manager access; logs reach the SIEM through Service Connector Hub.',
+    'When PeopleSoft is on, or moving to, OCI.',
+    'Native SAML on 8.63 with OCI-hosted PeopleSoft is the shortest route to phishing-resistant sign-in end to end.',
+  ] },
+  'cloud-aws': { eyebrow: 'Hyperscaler', title: 'Amazon Web Services', s: [
+    'AWS hosting for PeopleSoft on EC2 or for the services around it, with IAM Identity Center for administrator access.',
+    'Administrators federate from Okta or Entra ID to IAM Identity Center; Session Manager replaces open SSH and RDP; KMS protects keys; CloudTrail and Security Hub feed the SIEM.',
+    'Agencies with an AWS landing zone, including GovCloud for CJIS workloads.',
+    'Applying the same MFA standard to the AWS console that PeopleSoft administrators meet.',
+    '20+ years on AWS, including GovCloud CJIS landing zones at Texas DPS and multi-agent security on Amazon Bedrock for Ford Credit. AWS Solutions Architect – Professional and Security – Specialty.',
+    'Organization and account structure, SCP guardrails, federation trust.',
+    'AWS WAF and an Application Load Balancer in front of the web tier enforce the gateway-only path.',
+    'When PeopleSoft or its gateway runs in AWS.',
+    'Oracle Database@AWS places Oracle Exadata database services inside AWS data centers for the PeopleSoft database.',
+  ] },
+  'cloud-azure': { eyebrow: 'Hyperscaler', title: 'Microsoft Azure', s: [
+    'Azure hosting for PeopleSoft or its gateway, administered through Entra ID and Azure RBAC.',
+    'Entra Conditional Access and PIM govern the Azure portal; Azure Bastion removes public management ports; Key Vault holds secrets; Defender for Cloud and Sentinel monitor.',
+    'Microsoft-centric agencies; BIG-IP Virtual Edition or Okta Access Gateway hosted in Azure.',
+    'One Microsoft control plane for Microsoft 365 and infrastructure.',
+    '18+ years on Azure: AIMXDR deployed for 25+ organizations, Sentinel "SOC in a Box", Entra ID for 12,000+ identities at Texas DPS. Azure Solutions Architect Expert, AZ-500, SC-100.',
+    'Subscription and management-group design, Azure Policy, private networking.',
+    'Application Gateway WAF fronts the web tier; Sentinel correlates Okta, Entra, and PeopleSoft logs.',
+    'When PeopleSoft or the gateway runs in Azure, or Sentinel is the SIEM.',
+    'Oracle Database@Azure runs Oracle database services inside Azure regions for low-latency PeopleSoft hosting.',
+  ] },
+  'cloud-gcp': { eyebrow: 'Hyperscaler', title: 'Google Cloud', s: [
+    'Google Cloud as part of a multi-cloud estate — analytics, integration, or Oracle Database@Google Cloud — with Cloud Identity or Workforce Identity Federation for administrators.',
+    'Administrators federate from Okta or Entra ID; Identity-Aware Proxy replaces open management ports; Cloud KMS protects keys; Security Command Center and Cloud Audit Logs feed the SIEM.',
+    'Agencies with Google workloads that exchange data with PeopleSoft.',
+    'Consistent MFA and key management across every cloud that touches finance data.',
+    'Ford GCP 3.0: Full Stack Assessment security reviews and the GCP network landing pattern in Terraform; the GCP-Chaotic-Deploy HIPAA landing zone. Google Professional Cloud Architect and Cloud Security Engineer.',
+    'Organization policies, Workload Identity Federation, VPC Service Controls.',
+    'Integration Broker endpoints exposed to Google workloads stay off the user sign-on path.',
+    'When PeopleSoft data flows to or from Google Cloud.',
+    'Keyless pipelines through Workload Identity Federation remove long-lived service-account keys.',
+  ] },
+  'oci-cm': { eyebrow: 'OCI', title: 'PeopleSoft Cloud Manager', s: [
+    'Oracle’s tool for provisioning, cloning, patching, and upgrading PeopleSoft environments on OCI.',
+    'Cloud Manager runs in the customer tenancy, downloads PeopleTools and application images to an OCI repository, and builds environments from templates. PeopleTools 8.63 upgrades use Cloud Manager Image 22.',
+    'Non-production and production PeopleSoft environments on OCI.',
+    'Standing up identical test environments for MFA testing and applying the PeopleTools upgrade that enables native SAML.',
+    'Clone production security data into a test environment, apply 8.63, and run the 60-case plan against native SAML.',
+    'OCI tenancy, compartments, network, Vault, and administrator federation for Cloud Manager users.',
+    'Cloud Manager administrators are a privileged population and belong under the privileged rule.',
+    'When PeopleSoft is on OCI.',
+    'Template-built environments make it practical to test every MFA configuration change before production.',
+  ] },
+  'oci-iam': { eyebrow: 'OCI', title: 'OCI IAM identity domains', s: [
+    'OCI’s identity service, successor to Oracle Identity Cloud Service, which controls access to the OCI console, APIs, and Oracle SaaS and can federate to external identity providers.',
+    'An identity domain trusts Okta or Entra ID over SAML 2.0, and groups map to OCI policies. Oracle also documents OCI IAM, with its App Gateway, as a PeopleSoft single sign-on and MFA solution using the delivered OAMSSO_AUTHENTICATION sign-on PeopleCode.',
+    'OCI console, Cloud Manager, Fusion applications, and optionally PeopleSoft itself.',
+    'Keeping one workforce identity provider while OCI enforces its own authorization.',
+    'Jack Henry Fusion architecture: Entra ID federated to OCI IAM over SAML 2.0 with SCIM provisioning.',
+    'Federation metadata, group mapping, a local emergency administrator.',
+    'OCI Audit logs show federated administrator activity next to Okta events in the SIEM.',
+    'Whenever OCI hosts any part of the PeopleSoft estate.',
+    'Use OCI IAM for PeopleSoft sign-on only if the organization standardizes on Oracle identity; otherwise keep Okta as the identity provider and federate.',
+  ] },
+  'oci-sec': { eyebrow: 'OCI', title: 'OCI security services', s: [
+    'The OCI controls around a PeopleSoft estate: Cloud Guard and Security Zones for posture, Vault for keys, WAF and Network Firewall at the edge, Bastion for administrator access, Data Safe for the database, and Audit and Logging for evidence.',
+    'Security Zones block non-compliant resources at creation; Cloud Guard detects drift and can remediate it; Data Safe assesses database users and activity; Service Connector Hub forwards logs to the SIEM.',
+    'PeopleSoft compartments in production and non-production.',
+    'Private subnets for application and database tiers, finding over-privileged database accounts, and a year of audit evidence.',
+    'A Security Zone blocks a public IP on the PeopleSoft application tier; Data Safe flags a dormant privileged database user.',
+    'Compartment design, tagging, log retention.',
+    'The same posture work I led across AWS, Azure, and GCP, including 1,000+ CSPM cases moved to owner remediation at GE Appliances.',
+    'From the first OCI environment build.',
+    'Map OCI findings to the same NIST 800-53 controls used for the other clouds so one report covers all of them.',
+  ] },
+  'kpi-clouds': { eyebrow: 'KPI · Platforms', title: 'Hosting options covered', s: [
+    'The four hyperscalers — Oracle OCI, AWS, Azure, and Google Cloud — plus on-premises hosting that the design accounts for.',
+    'The architecture diagram’s hosting switch redraws the load balancer, database, and administration plane for each option; the OCI & multi-cloud section maps each control across the clouds.',
+    'Design, hosting decisions, and administrator access reviews.',
+    'Making sure every console that can change the PeopleSoft environment meets the same MFA standard as PeopleSoft itself.',
+    'On OCI, Cloud Manager administrators federate through an OCI IAM identity domain to Okta and hit the privileged rule.',
+    'Hosting decision, federation trust per cloud.',
+    'Feeds the privileged population, the SIEM, and the risk register (R-12).',
+    'From assessment.',
+    'One control report across all clouds, mapped to NIST 800-53.',
+  ] },
+  'states': { eyebrow: 'Public sector', title: 'State government experience', s: [
+    'Experience with state government in ten states — Texas, Hawaii, Illinois, Indiana, Wisconsin, South Carolina, North Carolina, Arizona, Florida, and Pennsylvania — plus 8 government agencies and additional state agencies on PeopleSoft programs.',
+    'Each state has its own security policies, procurement rules, audit expectations, and change calendars. The work is aligning the design to that state’s standards and evidence requirements.',
+    'State agencies, public-safety and health and human services departments, and PeopleSoft Financials, HR, and Student programs.',
+    'Mapping controls to state policy, running architecture review gates, preparing audit evidence, and timing changes around fiscal close.',
+    'Texas DPS and TXHHS: Entra ID SSO, Conditional Access, MFA, and PIM for 12,000+ identities under CJIS, TX-RAMP, and FedRAMP, with AWS GovCloud landing zones.',
+    'Each state’s security standards and exception process, and agency change-control windows.',
+    'Informs how this engagement maps to New York State ITS identity, account-management, and logging standards.',
+    'From mobilization, because state standards shape the security requirements baseline.',
+    'Bring the same standards-crosswalk approach to New York so audit evidence is produced as the work happens.',
+  ] },
+});
+
+/* ---------- glossary (popovers) ---------- */
+const GLOSSARY = {
+  'AAL2': 'NIST SP 800-63B Authenticator Assurance Level 2: two distinct factors, such as Okta Verify push or FastPass plus a second factor.',
+  'AAL3': 'NIST SP 800-63B Level 3: a hardware-based, phishing-resistant cryptographic authenticator, such as a FIDO2 security key, plus a second factor.',
+  'OPRID': 'The PeopleSoft user ID stored in PSOPRDEFN. Okta or Entra ID must map each person to exactly one OPRID.',
+  'PS_TOKEN': 'The PeopleSoft single sign-on cookie issued after sign-in and trusted by nodes that share the same trust settings.',
+  'PIA': 'PeopleSoft Pure Internet Architecture: the WebLogic web tier that serves PeopleSoft pages.',
+  'Integration Broker': 'PeopleSoft middleware for messages and web services between systems. It authenticates nodes, not people.',
+  'sign-on PeopleCode': 'PeopleCode registered under Security Objects that runs at every sign-in. Delivered OAMSSO_AUTHENTICATION reads a trusted identity header.',
+  'web profile': 'PeopleSoft settings for timeouts, sign-on and logout pages, cookies, and public-access user IDs.',
+  'FastPass': 'Okta FastPass: a passwordless, device-bound authenticator in Okta Verify. With biometrics it is phishing-resistant.',
+  'number challenge': 'An Okta Verify push where the user must pick the number shown on screen, which stops blind push approvals.',
+  'Okta Access Gateway': 'Okta’s reverse proxy that brings Okta SSO and MFA to header-based on-premises apps such as PeopleSoft.',
+  'Conditional Access': 'Microsoft Entra ID policy engine that grants or blocks sign-ins based on user, app, device, location, and risk.',
+  'authentication strength': 'An Entra Conditional Access control that names exactly which MFA methods satisfy a policy, for example phishing-resistant only.',
+  'PIM': 'Entra Privileged Identity Management: just-in-time, approved, time-bound role activation.',
+  'enforceMfaByFederatedIdp': 'Entra domain federation setting that makes Entra ID rely on the federated identity provider (Okta) to perform MFA.',
+  'identity domain': 'An OCI IAM container for users, groups, and federation settings; successor to Oracle Identity Cloud Service.',
+  'Cloud Manager': 'PeopleSoft Cloud Manager provisions, clones, patches, and upgrades PeopleSoft environments on OCI.',
+  'Cloud Guard': 'OCI service that detects misconfigurations and threats and can trigger remediation.',
+  'Security Zones': 'OCI compartments with enforced policies that block non-compliant resources when they are created.',
+  'Data Safe': 'OCI service for Oracle database security and user assessment, auditing, and data masking.',
+  'FIDO2': 'Open standard for phishing-resistant sign-in with security keys or platform authenticators (WebAuthn).',
+  'ThreatInsight': 'Okta feature that detects and can block sign-in attempts from IP addresses linked to credential attacks.',
+  'PSACCESSLOG': 'PeopleTools table that records PeopleSoft sign-on and sign-off events with user and IP address.',
+  'OAMSSO_AUTHENTICATION': 'Delivered sign-on PeopleCode function (FUNCLIB_LDAP) that accepts a trusted identity header from an access gateway.',
+  'PS_SSO_UID': 'The HTTP header name in Microsoft’s Entra ID + F5 BIG-IP guide for passing the PeopleSoft user ID.',
+  'CJIS': 'FBI Criminal Justice Information Services Security Policy, which governs access to criminal justice data.',
+  'IAM Identity Center': 'AWS service for workforce sign-in to AWS accounts, usually federated from Okta or Entra ID.',
+  'Oracle Database@Azure': 'Oracle database services run by Oracle inside Microsoft Azure data centers. Oracle offers the same model on AWS and Google Cloud.',
+};
+
+/* ---------- state tile map ---------- */
+const STATE_NOTE_GENERIC = 'State government experience. Engagement details available on request.';
+const STATES = {
+  TX: { name: 'Texas', on: true, note: 'Texas DPS and TXHHS (via Robert Half): Entra ID SSO, Conditional Access, MFA, and PIM for 12,000+ identities; AWS GovCloud CJIS landing zones; F5 BIG-IP APM SSO; ARB governance.' },
+  HI: { name: 'Hawaii', on: true, note: STATE_NOTE_GENERIC },
+  IL: { name: 'Illinois', on: true, note: 'State of Illinois, Cook County, and City of Chicago engagements.' },
+  IN: { name: 'Indiana', on: true, note: STATE_NOTE_GENERIC },
+  WI: { name: 'Wisconsin', on: true, note: STATE_NOTE_GENERIC },
+  SC: { name: 'South Carolina', on: true, note: STATE_NOTE_GENERIC },
+  NC: { name: 'North Carolina', on: true, note: STATE_NOTE_GENERIC },
+  AZ: { name: 'Arizona', on: true, note: STATE_NOTE_GENERIC },
+  FL: { name: 'Florida', on: true, note: 'State of Florida engagement.' },
+  PA: { name: 'Pennsylvania', on: true, note: STATE_NOTE_GENERIC },
+  NY: { name: 'New York', target: true, note: 'This engagement: Albany, 50% on-site. Newly relocated to Tarrytown, NY.' },
+};
+/* NPR-style tile grid: [code, col, row] */
+const TILES = [
+  ['AK',0,0],['ME',11,0],['VT',10,1],['NH',11,1],
+  ['WA',1,2],['ID',2,2],['MT',3,2],['ND',4,2],['MN',5,2],['IL',6,2],['WI',7,2],['MI',8,2],['NY',9,2],['RI',10,2],['MA',11,2],
+  ['OR',1,3],['NV',2,3],['WY',3,3],['SD',4,3],['IA',5,3],['IN',6,3],['OH',7,3],['PA',8,3],['NJ',9,3],['CT',10,3],
+  ['CA',1,4],['UT',2,4],['CO',3,4],['NE',4,4],['MO',5,4],['KY',6,4],['WV',7,4],['VA',8,4],['MD',9,4],['DE',10,4],
+  ['AZ',2,5],['NM',3,5],['KS',4,5],['AR',5,5],['TN',6,5],['NC',7,5],['SC',8,5],['DC',9,5],
+  ['OK',4,6],['LA',5,6],['MS',6,6],['AL',7,6],['GA',8,6],
+  ['HI',0,7],['TX',4,7],['FL',9,7],
+];
+
+/* ---------- hyperscalers ---------- */
+const HYPERSCALERS = [
+  ['cloud-oci', 'Oracle OCI', 'Oracle OCI certified', 'Cloud Manager · OCI IAM · Security Zones'],
+  ['cloud-aws', 'AWS', '20+ years · GovCloud', 'IAM Identity Center · KMS · Security Hub'],
+  ['cloud-azure', 'Microsoft Azure', '18+ years', 'Entra ID · PIM · Defender · Sentinel'],
+  ['cloud-gcp', 'Google Cloud', 'Ford GCP 3.0', 'Workforce Identity Federation · KMS · SCC'],
+];
+const OCI_CARDS = [
+  ['oci-cm', 'PeopleSoft Cloud Manager', 'Provision, clone, patch, upgrade to 8.63'],
+  ['oci-iam', 'OCI IAM identity domains', 'Console federation to Okta or Entra ID'],
+  ['oci-sec', 'OCI security services', 'Cloud Guard · Security Zones · Vault · Data Safe'],
+];
+const CLOUD_MATRIX = [
+  ['Admin federation & MFA', 'OCI IAM identity domain ← Okta / Entra (SAML)', 'IAM Identity Center ← Okta / Entra', 'Entra ID + Conditional Access, PIM', 'Cloud Identity / Workforce Identity Federation'],
+  ['Private admin access', 'OCI Bastion', 'Systems Manager Session Manager', 'Azure Bastion', 'Identity-Aware Proxy'],
+  ['Keys & secrets', 'OCI Vault', 'KMS · CloudHSM · Secrets Manager', 'Key Vault · Managed HSM', 'Cloud KMS · Secret Manager'],
+  ['Web tier protection', 'OCI WAF · Load Balancer', 'AWS WAF · ALB', 'Application Gateway WAF · Front Door', 'Cloud Armor · Load Balancing'],
+  ['Posture & guardrails', 'Cloud Guard · Security Zones', 'Security Hub · Config · SCPs', 'Defender for Cloud · Azure Policy', 'Security Command Center · Org Policy'],
+  ['Audit logs to SIEM', 'Audit · Logging · Service Connector Hub', 'CloudTrail · CloudWatch', 'Activity log · Entra logs → Log Analytics', 'Cloud Audit Logs · Log Router'],
+  ['Oracle database', 'Base Database / Exadata · Data Safe', 'Oracle Database@AWS · Oracle on EC2', 'Oracle Database@Azure', 'Oracle Database@Google Cloud'],
+  ['PeopleSoft hosting fit', 'Oracle’s target: Cloud Manager, new PeopleTools first', 'IaaS on EC2', 'IaaS on VMs; BIG-IP VE or Okta Access Gateway in Azure', 'Uncommon for PeopleSoft; data and integration'],
+];
+
+/* ---------- Entra ---------- */
+const ENTRA_MODELS = [
+  ['entra-m1', 'Model 1', 'Entra ID as user source', 'Okta is the PeopleSoft IdP; Microsoft 365 unchanged'],
+  ['entra-m2', 'Model 2', 'Okta federated for Microsoft 365', 'One prompt; Entra accepts Okta MFA'],
+  ['entra-m3', 'Model 3', 'Entra ID upstream of Okta', 'Entra signs in; Okta applies PeopleSoft policy'],
+  ['pat-E', 'Model 4 · reference', 'Entra ID + F5 BIG-IP APM', 'Entra is the IdP; no Okta in path'],
+];
+const ENTRA_CONTROLS = [
+  ['entra-ca', 'Conditional Access & authentication strengths', 'Phishing-resistant MFA for admins; block legacy authentication', 'TXDPS, 12,000+ identities'],
+  ['entra-pim', 'Privileged Identity Management', 'Just-in-time roles around identity and hosting', 'TXDPS'],
+  ['entra-gov', 'Access reviews & group governance', 'Six-month privileged-access reviews with evidence', 'Entra ID Governance · SailPoint'],
+  ['entra-logs', 'Sign-in & audit logs to the SIEM', 'Show which system performed MFA', 'Sentinel "SOC in a Box" (AIMXDR, 25+ orgs)'],
+];
+
+/* ---------- RAID additions ---------- */
+RISKS.push(
+  ['R-11', 'Users prompted twice by Entra ID and Okta', 'Medium', 'Pick the coexistence model in design: Entra accepts Okta MFA (enforceMfaByFederatedIdp) or Entra-primary routing', 'warn'],
+  ['R-12', 'Cloud console access weaker than PeopleSoft MFA', 'High', 'Federate OCI, AWS, and Azure consoles to the same IdP under the privileged rule', 'crit'],
+);
+DEPENDENCIES.push(
+  ['Microsoft 365 / Entra team', 'Domain federation decision, Conditional Access changes, sign-in log export'],
+  ['Cloud hosting team', 'OCI, AWS, or Azure admin federation, network rules, log forwarding'],
+);
+
+/* ============================================================
    Okta MFA · PeopleSoft Financials — Command Center v1 · app logic
    Kenneth P. Barnes · UCS Solutions · est. 1993
    ============================================================ */
@@ -1402,7 +1849,9 @@ const TELEMETRY = {
   const KEY = 'ucs-okta-ps-cc-v1';
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
-  const state = Object.assign({ tests: {}, checks: {}, weights: null, release: 'old', pattern: 'B', filter: 'All', tree: { q1: 'no', q2: 'no', q3: 'no' } }, load());
+  const state = Object.assign({ tests: {}, checks: {}, weights: null, release: 'old', pattern: 'B', filter: 'All', tree: { q1: 'no', q2: 'no', q3: 'no' }, host: 'onprem', entra: { q1: 'no', q2: 'no' } }, load());
+  if (!state.entra) state.entra = { q1: 'no', q2: 'no' };
+  if (!state.host) state.host = 'onprem';
   if (!state.weights) { state.weights = {}; CRITERIA.forEach((c) => { state.weights[c.id] = c.w; }); }
 
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -1424,6 +1873,7 @@ const TELEMETRY = {
   const NAV = [
     ['Overview', [['overview', 'Engagement & KPIs'], ['coverage', 'JD coverage map'], ['candidate', 'Candidate']]],
     ['Design', [['architecture', 'Sign-on architecture'], ['decision', 'Pattern decision'], ['assess', 'Current state']]],
+    ['Platforms & reach', [['entra', 'Entra ID coexistence'], ['cloud', 'OCI & multi-cloud'], ['states', 'State experience', '10']]],
     ['Configuration', [['policy', 'Okta policy'], ['psmap', 'PeopleSoft mapping'], ['access', 'Access & standards']]],
     ['Delivery', [['tests', 'Test plan', '60'], ['cutover', 'Waves & rollback'], ['monitor', 'Logging & monitoring']]],
     ['Program', [['roadmap', '30-month roadmap'], ['raid', 'Risks & dependencies'], ['kt', 'Knowledge transfer']]],
@@ -1527,6 +1977,8 @@ const TELEMETRY = {
       ['kpi-waves', 'Enforcement waves', 6, '', 'Pilot + 5 waves · M13–M22', WAVES.map((w) => w[2])],
       ['kpi-coverage', 'JD items mapped', COVERAGE.length, ' / ' + COVERAGE.length, 'Responsibilities + qualifications', { prog: 1 }],
       ['kpi-months', 'Engagement', 30, ' mo', 'Eight phases · M1–M30', [3, 3, 4, 4, 2, 7, 3, 5]],
+      ['kpi-clouds', 'Hosting options', 4, ' clouds', 'Plus on-premises', { pills: ['OCI', 'AWS', 'Azure', 'GCP'] }],
+      ['states', 'State governments', 10, '', 'Plus 8 agencies on PeopleSoft', { pills: Object.keys(STATES).filter((k) => STATES[k].on) }],
     ];
   }
   function renderKpis(animate) {
@@ -1536,65 +1988,79 @@ const TELEMETRY = {
         <span class="k-label">${l}</span>
         <span class="k-value" data-to="${v === null ? '' : v}" data-suf="${esc(suf)}">${v === null ? esc(leader().id) : v + suf}</span>
         <span class="k-sub">${esc(sub)}</span>
-        ${sp && sp.prog !== undefined ? `<div class="progress" style="margin-top:10px"><span style="width:${(sp.prog * 100).toFixed(1)}%"></span></div>` : sp ? spark(sp, c) : `<span class="pill info" style="align-self:flex-start;margin-top:6px;white-space:normal">PeopleTools ${state.release === 'new' ? '8.63+' : '8.60–8.62'}</span>`}
+        ${sp && sp.pills ? `<div class="chips">${sp.pills.map((x) => `<span class="chip">${esc(x)}</span>`).join('')}</div>` : sp && sp.prog !== undefined ? `<div class="progress" style="margin-top:10px"><span style="width:${(sp.prog * 100).toFixed(1)}%"></span></div>` : sp ? spark(sp, c) : `<span class="pill info" style="align-self:flex-start;margin-top:6px;white-space:normal">PeopleTools ${state.release === 'new' ? '8.63+' : '8.60–8.62'}</span>`}
       </div>`).join('');
     if (animate) $$('#kpis .k-value').forEach((el) => { if (el.dataset.to !== '') countUp(el, +el.dataset.to, el.dataset.suf); });
   }
 
   /* ---------- architecture ---------- */
   const PAT_INFO = {
-    A: { gw: ['SAML 2.0 provider', 'PeopleTools 8.63'], okta: 'SAML assertion', note: 'Pattern A: Okta posts a signed SAML 2.0 assertion; PeopleTools 8.63 validates it and maps the subject to an OPRID. No gateway hop. Rollback: disable SAML in the web profile and return to the previous sign-on page.' },
-    B: { gw: ['Okta Access Gateway', 'header → PeopleCode'], okta: 'session + MFA', note: 'Pattern B: Okta Access Gateway authenticates with Okta, then forwards requests with the user ID in a header that sign-on PeopleCode trusts only from the gateway. Rollback: switch the load-balancer pool back to the pre-MFA path.' },
-    C: { gw: ['Web-tier agent', 'OAM WebGate ⇄ Okta'], okta: 'federation', note: 'Pattern C: an existing access manager federates to Okta and enforces it at the web tier. Fits only where that component already runs. Rollback: revert the agent policy to the previous authentication scheme.' },
+    A: { gw: ['SAML 2.0 provider', 'PeopleTools 8.63'], auth: 'okta', lbl: 'SAML assertion', note: 'Pattern A: Okta posts a signed SAML 2.0 assertion; PeopleTools 8.63 validates it and maps the subject to an OPRID. No gateway hop. Rollback: disable SAML in the web profile and return to the previous sign-on page.' },
+    B: { gw: ['Okta Access Gateway', 'header → PeopleCode'], auth: 'okta', lbl: 'session + MFA', note: 'Pattern B: Okta Access Gateway authenticates with Okta, then forwards requests with the user ID in a header that sign-on PeopleCode (delivered OAMSSO_AUTHENTICATION plus a source check) trusts only from the gateway. Rollback: switch the load-balancer pool back to the pre-MFA path.' },
+    C: { gw: ['Web-tier agent', 'OAM · OCI App Gateway'], auth: 'okta', lbl: 'federation', note: 'Pattern C: Oracle Access Manager WebGate or the OCI IAM App Gateway enforces sign-in at the web tier, federated to Okta. Fits only where that component already runs. Rollback: revert the agent policy to the previous authentication scheme.' },
+    E: { gw: ['F5 BIG-IP APM', 'SAML SP · PS_SSO_UID'], auth: 'entra', lbl: 'SAML + Cond. Access', note: 'Reference pattern E: Microsoft Entra ID is the identity provider and F5 BIG-IP APM the SAML service provider; BIG-IP injects PS_SSO_UID and the delivered OAMSSO_AUTHENTICATION sign-on PeopleCode trusts it. I used Entra ID with BIG-IP APM this way at Texas DPS. Shown for coexistence planning; this engagement specifies Okta.' },
   };
-  function node(id, x, y, w, h, t1, t2, hl) {
-    return `<g class="node${hl ? ' hl' : ''}" ${drillAttrs(id)} transform="translate(${x},${y})"><rect width="${w}" height="${h}" rx="10"/><text x="12" y="${h / 2 - 3}">${esc(t1)}</text><text class="sub" x="12" y="${h / 2 + 13}">${esc(t2)}</text></g>`;
+  const HOST = {
+    onprem: { label: 'On-premises', lb: 'F5 · gateway-only', admin: ['Infra admin', 'jump host · PAM'], db: 'Oracle DB · roles' },
+    oci: { label: 'OCI', lb: 'OCI LB · WAF', admin: ['OCI IAM domain', 'console · Cloud Mgr'], db: 'Base DB · Data Safe' },
+    aws: { label: 'AWS', lb: 'ALB · AWS WAF', admin: ['Identity Center', 'console · SSM'], db: 'Oracle on EC2' },
+    azure: { label: 'Azure', lb: 'App GW · WAF', admin: ['Azure RBAC', 'Entra ID · Bastion'], db: 'Oracle DB@Azure' },
+  };
+  function node(id, x, y, w, h, t1, t2, hl, dim) {
+    return `<g class="node${hl ? ' hl' : ''}${dim ? ' dimmed' : ''}" ${drillAttrs(id)} transform="translate(${x},${y})"><rect width="${w}" height="${h}" rx="10"/><text x="12" y="${h / 2 - 3}">${esc(t1)}</text><text class="sub" x="12" y="${h / 2 + 13}">${esc(t2)}</text></g>`;
   }
   function edge(d, cls, lx, ly, label) {
     return `<path class="edge ${cls || ''}" d="${d}" marker-end="url(#arr${cls === 'crit' ? 'C' : cls === 'dim' ? 'D' : ''})"/>` + (label ? `<text class="elabel" x="${lx}" y="${ly}">${esc(label)}</text>` : '');
   }
   function drawArch() {
-    const p = PAT_INFO[state.pattern];
-    const svg = $('#arch');
-    svg.innerHTML = `
+    const p = PAT_INFO[state.pattern] || PAT_INFO.B;
+    const h = HOST[state.host] || HOST.onprem;
+    const ent = p.auth === 'entra';
+    $('#arch').innerHTML = `
       <defs>
         <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${css('--accent')}"/></marker>
         <marker id="arrD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${css('--muted')}"/></marker>
         <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${css('--crit')}"/></marker>
       </defs>
       <rect class="zone" x="150" y="170" width="840" height="104" rx="12"/>
-      <text class="zlabel" x="740" y="164">PEOPLESOFT REQUEST PATH</text>
-      <rect class="zone" x="10" y="14" width="620" height="92" rx="12"/>
-      <text class="zlabel" x="20" y="10">IDENTITY</text>
-      ${edge('M170 60 L228 60', '', 176, 52, 'import')}
-      ${edge('M470 60 L412 60', 'dim', 418, 52, 'reset')}
-      ${edge('M120 190 C 140 140, 190 110, 240 94', '', 18, 150, 'authenticate + MFA')}
-      ${edge('M300 92 L 252 188', '', 282, 146, p.okta)}
+      <text class="zlabel" x="640" y="164">PEOPLESOFT REQUEST PATH · ${esc(h.label.toUpperCase())}</text>
+      <rect class="zone" x="10" y="14" width="850" height="92" rx="12"/>
+      <text class="zlabel" x="20" y="10">IDENTITY &amp; ADMINISTRATION</text>
+      ${edge('M130 60 L148 60', '', 0, 0, '')}
+      ${edge('M310 60 L328 60', ent ? 'dim' : '', 304, 52, '')}
+      ${edge('M530 60 L512 60', 'dim', 0, 0, '')}
+      ${edge('M470 30 C 520 2, 690 2, 760 28', 'dim', 560, 14, 'SAML · admin rule')}
+      ${ent ? edge('M95 190 C 110 140, 170 112, 215 94', '', 14, 150, 'authenticate + MFA') : edge('M110 190 C 150 128, 300 118, 368 94', '', 150, 146, 'authenticate + MFA')}
+      ${ent ? edge('M235 92 L 245 188', '', 250, 146, p.lbl) : edge('M400 92 L 270 188', '', 336, 140, p.lbl)}
       ${edge('M140 222 L 158 222', '', 0, 0, '')}
       ${edge('M330 222 L 348 222', '', 0, 0, '')}
       ${edge('M475 222 L 498 222', '', 0, 0, '')}
       ${edge('M650 222 L 668 222', '', 0, 0, '')}
       ${edge('M810 222 L 828 222', '', 0, 0, '')}
       ${edge('M80 254 C 90 345, 560 345, 575 256', 'crit', 120, 338, 'direct to PIA — blocked')}
-      ${edge('M372 92 L 340 160 L 340 300 L 398 358', 'dim', 348, 296, 'System Log')}
+      ${edge('M480 92 L 487 170 L 487 300 L 470 356', 'dim', 493, 300, 'IdP sign-in logs')}
       ${edge('M690 254 C 660 320, 600 350, 542 372', 'dim', 612, 318, 'PSACCESSLOG')}
       ${edge('M760 254 L 762 356', 'dim', 770, 312, 'node auth, no Okta')}
       ${edge('M840 392 L 982 392', 'dim', 852, 384, 'banks / feeds')}
-      ${node('node-dir', 20, 30, 150, 60, 'Directory', 'AD / LDAP')}
-      ${node('node-okta', 230, 30, 180, 60, 'Okta Identity Engine', 'policies · MFA · risk', true)}
-      ${node('node-desk', 470, 30, 150, 60, 'Service desk', 'enroll · recover')}
+      ${node('node-dir', 20, 30, 110, 60, 'AD / LDAP', 'on-prem source')}
+      ${node('node-entra', 150, 30, 160, 60, 'Microsoft Entra ID', 'M365 · CA · PIM', ent)}
+      ${node('node-okta', 330, 30, 180, 60, 'Okta Identity Engine', 'policies · MFA · risk', !ent, ent)}
+      ${node('node-desk', 530, 30, 130, 60, 'Service desk', 'enroll · recover')}
+      ${node('node-admin', 690, 30, 160, 60, h.admin[0], h.admin[1])}
       ${node('node-users', 20, 190, 120, 64, 'Users', '6 populations')}
       ${node('node-gateway', 160, 190, 170, 64, p.gw[0], p.gw[1], true)}
-      ${node('node-lb', 350, 190, 125, 64, 'Load balancer', 'gateway-only')}
+      ${node('node-lb', 350, 190, 125, 64, 'Load balancer', h.lb)}
       ${node('node-web', 500, 190, 150, 64, 'PIA web server', 'WebLogic · profile')}
       ${node('node-app', 670, 190, 140, 64, 'App server', 'Tuxedo · sign-on')}
-      ${node('node-db', 830, 190, 150, 64, 'Database', 'PSOPRDEFN · roles')}
+      ${node('node-db', 830, 190, 150, 64, 'Database', h.db)}
       ${node('node-siem', 380, 358, 160, 64, 'SIEM', 'logs · 1 year')}
       ${node('node-ib', 690, 358, 150, 64, 'Integration Broker', 'nodes · batch')}`;
-    $('#archNote').textContent = p.note;
-    $$('.arch-ctrl .seg').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pat === state.pattern)));
+    $('#archNote').textContent = p.note + ' Hosting: ' + h.label + '.';
+    $$('[data-pat]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pat === state.pattern)));
+    $$('[data-host]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.host === state.host)));
   }
-  $$('.arch-ctrl .seg').forEach((b) => b.addEventListener('click', () => { state.pattern = b.dataset.pat; save(); drawArch(); }));
+  $$('[data-pat]').forEach((b) => b.addEventListener('click', () => { state.pattern = b.dataset.pat; save(); drawArch(); }));
+  $$('[data-host]').forEach((b) => b.addEventListener('click', () => { state.host = b.dataset.host; save(); drawArch(); }));
 
   /* ---------- scorer ---------- */
   function renderWeights() {
@@ -1710,8 +2176,92 @@ const TELEMETRY = {
   $('#deliv').innerHTML = DELIVERABLES.map((d, i) => `<div class="glass pad"><span class="hint">Deliverable ${i + 1}</span><h3 style="margin-top:4px">${esc(d[0])}</h3><p class="muted" style="margin-top:4px">${esc(d[1])}</p></div>`).join('');
 
   /* ---------- coverage ---------- */
-  const SECNAME = { assess: 'Current state', decision: 'Pattern decision', policy: 'Okta policy', psmap: 'PeopleSoft mapping', tests: 'Test plan', cutover: 'Waves & rollback', access: 'Access & standards', monitor: 'Logging & monitoring', kt: 'Knowledge transfer', raid: 'Risks & dependencies', roadmap: '30-month roadmap', candidate: 'Candidate', architecture: 'Architecture' };
+  const SECNAME = { assess: 'Current state', decision: 'Pattern decision', policy: 'Okta policy', psmap: 'PeopleSoft mapping', tests: 'Test plan', cutover: 'Waves & rollback', access: 'Access & standards', monitor: 'Logging & monitoring', kt: 'Knowledge transfer', raid: 'Risks & dependencies', roadmap: '30-month roadmap', candidate: 'Candidate', architecture: 'Architecture', entra: 'Entra ID coexistence', cloud: 'OCI & multi-cloud', states: 'State experience' };
   $('#cov').innerHTML = COVERAGE.map((c) => `<tr><td class="mono" style="white-space:nowrap">${esc(c[0])}</td><td><b>${esc(c[1])}</b></td><td><a href="#${c[2]}">${SECNAME[c[2]]}</a></td><td>${esc(c[3])}</td></tr>`).join('');
+
+  /* ---------- v2: Entra ID coexistence ---------- */
+  $('#entraModels').innerHTML = ENTRA_MODELS.map(([k, tag, t, sub]) => `<div class="glass pad clickable" ${drillAttrs(k)}><span class="hint">${esc(tag)}</span><h3 style="margin-top:4px">${esc(t)}</h3><p class="muted" style="margin-top:4px">${esc(sub)}</p><span class="hint">Open detail →</span></div>`).join('');
+  $('#entraCtl').innerHTML = ENTRA_CONTROLS.map(([k, c, why, ev]) => `<tr class="clickable" ${drillAttrs(k)}><td><b>${esc(c)}</b></td><td>${esc(why)}</td><td>${esc(ev)}</td></tr>`).join('');
+  function renderEntraPick() {
+    const a = state.entra;
+    const Q = [['q1', 'Does Okta already federate the Microsoft 365 domain?'], ['q2', 'Is Entra ID the declared primary workforce identity provider?']];
+    let k, why;
+    if (a.q1 === 'yes') { k = 'entra-m2'; why = 'Okta already owns Microsoft 365 sign-in, so let Entra ID accept Okta MFA and give users one prompt.'; }
+    else if (a.q2 === 'yes') { k = 'entra-m3'; why = 'Keep Entra ID as primary sign-in and let Okta apply the PeopleSoft policy, with an extra Okta factor for privileged roles.'; }
+    else { k = 'entra-m1'; why = 'Fastest path: Okta reads users from Entra ID and owns PeopleSoft MFA; Microsoft 365 stays as it is.'; }
+    const t = DRILL[k].title;
+    $('#entraPick').innerHTML = Q.map(([q, txt]) => `<div class="q"><span style="flex:1 1 240px">${txt}</span><span class="opts" role="group" aria-label="${txt}">${['no', 'yes'].map((o) => `<button class="seg" type="button" data-eq="${q}" data-o="${o}" aria-pressed="${a[q] === o}">${o === 'yes' ? 'Yes' : 'No'}</button>`).join('')}</span></div>`).join('') +
+      `<div class="verdict go"><span class="pill ok" style="margin-right:8px;animation:none">Recommended</span><b>${esc(t)}.</b> ${esc(why)} <button class="btn" type="button" ${drillAttrs(k)} style="margin-top:8px">Open model detail</button></div>`;
+    $$('#entraPick [data-eq]').forEach((b) => b.addEventListener('click', () => { state.entra[b.dataset.eq] = b.dataset.o; save(); renderEntraPick(); }));
+  }
+
+  /* ---------- v2: OCI & multi-cloud ---------- */
+  $('#clouds').innerHTML = HYPERSCALERS.map(([k, n, badge, sub]) => `<div class="glass pad clickable" ${drillAttrs(k)}><span class="badge">${esc(badge)}</span><h3 style="margin-top:8px">${esc(n)}</h3><p class="muted" style="margin-top:4px">${esc(sub)}</p><span class="hint">Open detail →</span></div>`).join('');
+  $('#ociCards').innerHTML = OCI_CARDS.map(([k, n, sub]) => `<div class="glass pad clickable" ${drillAttrs(k)}><span class="hint">Oracle OCI</span><h3 style="margin-top:4px">${esc(n)}</h3><p class="muted" style="margin-top:4px">${esc(sub)}</p><span class="hint">Open detail →</span></div>`).join('');
+  $('#cloudMatrix').innerHTML = CLOUD_MATRIX.map((r) => `<tr><td><b>${esc(r[0])}</b></td>${r.slice(1).map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+
+  /* ---------- v2: state tile map ---------- */
+  $('#tilemap').innerHTML = TILES.map(([c, col, row]) => {
+    const st = STATES[c];
+    const cls = st ? (st.on ? 'st on' : st.target ? 'st ny' : 'st') : 'st';
+    const attrs = st ? `data-state="${c}" tabindex="0" role="button" aria-label="${esc(st.name)}"` : 'aria-hidden="true"';
+    return `<div class="${cls}" style="grid-column:${col + 1};grid-row:${row + 1}" ${attrs}>${c}</div>`;
+  }).join('');
+  $('#stateList').innerHTML = Object.keys(STATES).filter((k) => STATES[k].on).map((k) => `<tr><td class="mono"><span class="term" data-state="${k}" tabindex="0">${k}</span></td><td><b>${esc(STATES[k].name)}</b></td><td>${esc(STATES[k].note)}</td></tr>`).join('');
+
+  /* ---------- v2: popovers ---------- */
+  const tip = $('#tip'); let tipEl = null;
+  function showTip(el) {
+    let title, body;
+    if (el.dataset.tip) { title = el.dataset.tip; body = GLOSSARY[title]; }
+    else if (el.dataset.state) { const st = STATES[el.dataset.state]; if (!st) return; title = st.name + (st.target ? ' · this engagement' : ''); body = st.note; }
+    if (!body) return;
+    tip.innerHTML = `<b>${esc(title)}</b>${esc(body)}`;
+    tip.classList.add('show'); tip.setAttribute('aria-hidden', 'false');
+    const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    let top = r.top - th - 8; if (top < 8) top = r.bottom + 8;
+    const left = Math.max(8, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 8));
+    tip.style.top = top + 'px'; tip.style.left = left + 'px'; tipEl = el;
+  }
+  function hideTip() { tip.classList.remove('show'); tip.setAttribute('aria-hidden', 'true'); tipEl = null; }
+  const TIPSEL = '[data-tip],[data-state]';
+  document.addEventListener('pointerover', (e) => { const el = e.target.closest(TIPSEL); if (el && e.pointerType !== 'touch') showTip(el); });
+  document.addEventListener('pointerout', (e) => { const el = e.target.closest(TIPSEL); if (el && e.pointerType !== 'touch' && !el.contains(e.relatedTarget)) hideTip(); });
+  document.addEventListener('focusin', (e) => { const el = e.target.closest(TIPSEL); if (el) showTip(el); });
+  document.addEventListener('focusout', (e) => { if (e.target.closest(TIPSEL)) hideTip(); });
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest(TIPSEL);
+    if (el) { e.stopPropagation(); if (tipEl === el) hideTip(); else showTip(el); return; }
+    if (tipEl) hideTip();
+  }, true);
+  window.addEventListener('scroll', () => { if (tipEl) hideTip(); }, { passive: true });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tipEl) hideTip(); });
+
+  function glossify(root) {
+    const keys = Object.keys(GLOSSARY).sort((a, b) => b.length - a.length);
+    const used = new Set();
+    const skip = 'pre,code,button,svg,a,input,label,h1,h2,h3,th,.term,.k-value,.seg,.status-btn,.clickable,[data-drill],.chip,.badge,.pill,.tag-pill,#tip';
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode(n) {
+      const pe = n.parentElement; if (!pe || pe.closest(skip)) return NodeFilter.FILTER_REJECT;
+      return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; } });
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((orig) => {
+      let n = orig;
+      for (const k of keys) {
+        if (used.has(k)) continue;
+        const re = new RegExp('(^|[^A-Za-z0-9_])(' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')(?![A-Za-z0-9_])');
+        const m = re.exec(n.nodeValue); if (!m) continue;
+        const start = m.index + m[1].length;
+        const span = document.createElement('span'); span.className = 'term'; span.dataset.tip = k; span.tabIndex = 0; span.textContent = m[2];
+        const rest = document.createTextNode(n.nodeValue.slice(start + m[2].length));
+        n.parentNode.insertBefore(document.createTextNode(n.nodeValue.slice(0, start)), n);
+        n.parentNode.insertBefore(span, n);
+        n.parentNode.insertBefore(rest, n);
+        n.parentNode.removeChild(n);
+        n = rest; used.add(k);
+      }
+    });
+  }
 
   /* ---------- copy ---------- */
   function copyBtn(btnId, preId) {
@@ -1771,7 +2321,8 @@ const TELEMETRY = {
   }
 
   /* ---------- boot ---------- */
-  renderKpis(true); drawArch(); renderWeights(); renderBars(); renderChecks(); renderFilters(); renderTests(); renderTree(); buildCharts();
+  renderKpis(true); drawArch(); renderWeights(); renderBars(); renderChecks(); renderFilters(); renderTests(); renderTree(); renderEntraPick(); buildCharts();
+  ['overview', 'architecture', 'decision', 'assess', 'entra', 'cloud', 'states', 'policy', 'psmap', 'access', 'cutover', 'monitor', 'raid', 'kt', 'candidate'].forEach((id) => { const el = document.getElementById(id); if (el) glossify(el); });
   const h = (location.hash || '').slice(1);
   if (h && /^[A-Za-z0-9._~-]+$/.test(h) && document.getElementById(h)) setTimeout(() => document.getElementById(h).scrollIntoView(), 50);
 })();
