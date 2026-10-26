@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Okta–PeopleSoft MFA Command Center</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Okta MFA for PeopleSoft Financials implementation command center by Kenneth P. Barnes, UCS Solutions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script>(function(){try{var t=localStorage.getItem('ucs-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}else if(!document.documentElement.getAttribute('data-theme')){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+<style>
+/* Layout concept: sticky left accordion nav + scrolling glass dashboard; dark-first UCS glassmorphism with a light toggle. */
+:root{
+  --bg-deep:#0a0e1a; --bg-mid:#0f172a; --bg-elev:#151d31;
+  --panel:rgba(24,33,54,.66); --panel-hover:rgba(36,48,76,.82); --glass:rgba(255,255,255,.04);
+  --border:rgba(148,163,184,.14); --border-bright:rgba(148,163,184,.30);
+  --accent:#22d3ee; --accent-2:#818cf8; --gold:#d4af37;
+  --ok:#34d399; --warn:#fbbf24; --crit:#f87171;
+  --text:#f1f5f9; --text-2:#cbd5e1; --muted:#8a9bb3; --inverse:#0b1220;
+  --grid:rgba(148,163,184,.12); --shadow:0 8px 32px rgba(0,0,0,.35);
+  --glow-a:rgba(34,211,238,.10); --glow-b:rgba(212,175,55,.06); --glow-c:rgba(129,140,248,.07);
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+  --r-sm:6px; --r-md:12px; --r-lg:18px;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg-deep:#eef2f8; --bg-mid:#e4eaf4; --bg-elev:#ffffff;
+    --panel:rgba(255,255,255,.82); --panel-hover:rgba(255,255,255,.98); --glass:rgba(15,23,42,.03);
+    --border:rgba(15,23,42,.10); --border-bright:rgba(15,23,42,.22);
+    --accent:#0e7490; --accent-2:#4f46e5; --gold:#9a6b00;
+    --ok:#047857; --warn:#b45309; --crit:#b91c1c;
+    --text:#0f172a; --text-2:#334155; --muted:#5b6b82; --inverse:#ffffff;
+    --grid:rgba(15,23,42,.08); --shadow:0 8px 24px rgba(15,23,42,.08);
+    --glow-a:rgba(14,116,144,.07); --glow-b:rgba(154,107,0,.05); --glow-c:rgba(79,70,229,.05);
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg-deep:#eef2f8; --bg-mid:#e4eaf4; --bg-elev:#ffffff;
+  --panel:rgba(255,255,255,.82); --panel-hover:rgba(255,255,255,.98); --glass:rgba(15,23,42,.03);
+  --border:rgba(15,23,42,.10); --border-bright:rgba(15,23,42,.22);
+  --accent:#0e7490; --accent-2:#4f46e5; --gold:#9a6b00;
+  --ok:#047857; --warn:#b45309; --crit:#b91c1c;
+  --text:#0f172a; --text-2:#334155; --muted:#5b6b82; --inverse:#ffffff;
+  --grid:rgba(15,23,42,.08); --shadow:0 8px 24px rgba(15,23,42,.08);
+  --glow-a:rgba(14,116,144,.07); --glow-b:rgba(154,107,0,.05); --glow-c:rgba(79,70,229,.05);
+  color-scheme:light;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0; font-family:var(--font-sans); color:var(--text); font-size:14px; line-height:1.6;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%,var(--glow-a) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 80% at 95% 100%,var(--glow-b) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 60% at 5% 80%,var(--glow-c) 0%,transparent 55%),
+    var(--bg-deep);
+  background-attachment:fixed;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top, 0px); z-index:10; background:var(--bg-deep);}
+h1,h2,h3,h4{text-wrap:balance; margin:0;}
+h1{font-size:clamp(26px,3.4vw,36px); font-weight:750; letter-spacing:-.02em; line-height:1.15;}
+h2{font-size:22px; font-weight:650; letter-spacing:-.01em;}
+h3{font-size:16px; font-weight:650;}
+p{margin:0;}
+a{color:var(--accent);}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+code,.mono{font-family:var(--font-mono); font-size:12.5px;}
+.muted{color:var(--muted);}
+.eyebrow{font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+.num{font-variant-numeric:tabular-nums;}
+
+/* ---------- app grid ---------- */
+.app{display:grid; grid-template-columns:268px minmax(0,1fr); gap:24px; max-width:1480px; margin:0 auto;}
+.sidebar{position:sticky; top:env(safe-area-inset-top, 0px); height:100vh; overflow-y:auto; padding-block:20px; border-right:1px solid var(--border);}
+.brand{display:flex; gap:10px; align-items:center; padding:0 14px 16px; border-bottom:1px solid var(--border); margin-bottom:10px;}
+.brand-mark{width:34px; height:34px; border-radius:9px; display:grid; place-items:center; font-weight:800; font-size:13px; color:var(--inverse); background:linear-gradient(135deg,var(--accent),var(--accent-2)); flex:none;}
+.brand-name{font-weight:700; font-size:13.5px; line-height:1.25;}
+.brand-sub{font-size:11px; color:var(--muted); font-family:var(--font-mono);}
+.nav-group{margin:2px 8px;}
+.nav-head{width:100%; display:flex; justify-content:space-between; align-items:center; gap:8px; background:none; border:0; color:var(--muted); font:600 11px var(--font-mono); letter-spacing:.12em; text-transform:uppercase; padding:10px 8px 6px; cursor:pointer;}
+.nav-head .chev{transition:transform .2s;}
+.nav-group.collapsed .chev{transform:rotate(-90deg);}
+.nav-group.collapsed .nav-links{display:none;}
+.nav-links{list-style:none; margin:0; padding:0;}
+.nav-links a{display:flex; justify-content:space-between; gap:8px; padding:7px 10px; border-radius:8px; color:var(--text-2); text-decoration:none; font-size:13px; border-left:2px solid transparent;}
+.nav-links a:hover{background:var(--glass); color:var(--text);}
+.nav-links a.active{background:var(--glass); color:var(--text); border-left-color:var(--accent);}
+.nav-links .tag{font-family:var(--font-mono); font-size:10.5px; color:var(--muted);}
+.side-foot{margin:16px 14px 0; padding-top:14px; border-top:1px solid var(--border); font-size:11.5px; color:var(--muted); display:grid; gap:6px;}
+
+.main{min-width:0; padding-block:20px 0;}
+.topbar{position:sticky; top:env(safe-area-inset-top, 0px); z-index:20; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; margin-bottom:18px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--panel); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);}
+.topbar .crumbs{font-size:12.5px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.topbar .crumbs b{color:var(--text);}
+.tb-actions{display:flex; gap:8px; align-items:center; flex:none;}
+.btn{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border-bright); background:var(--glass); color:var(--text); border-radius:999px; padding:6px 12px; font:600 12px var(--font-sans); cursor:pointer; text-decoration:none;}
+.btn:hover{background:var(--panel-hover);}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:var(--inverse); border-color:transparent;}
+.menu-btn{display:none;}
+
+/* ---------- sections ---------- */
+section{scroll-margin-top:80px; margin-bottom:28px;}
+.sec-head{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:14px;}
+.sec-head p{color:var(--text-2); max-width:72ch; margin-top:6px;}
+.glass{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);}
+.pad{padding:18px;}
+.grid{display:grid; gap:14px;}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr));}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr));}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr));}
+.g6{grid-template-columns:repeat(6,minmax(0,1fr));}
+.clickable{cursor:pointer; transition:transform .15s, background .15s, border-color .15s;}
+.clickable:hover{background:var(--panel-hover); border-color:var(--border-bright); transform:translateY(-1px);}
+.hint{font-size:11.5px; color:var(--muted); font-family:var(--font-mono);}
+
+/* hero */
+.hero{padding:26px; display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:22px; align-items:start;}
+.hero p.lead{font-size:15px; color:var(--text-2); margin-top:10px; max-width:70ch;}
+.tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:14px;}
+.tag-pill{font:500 11.5px var(--font-mono); padding:4px 9px; border-radius:999px; border:1px solid var(--border-bright); color:var(--text-2); background:var(--glass);}
+.hero-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;}
+.fit{display:grid; gap:8px; font-size:13px;}
+.fit div{display:grid; grid-template-columns:110px minmax(0,1fr); gap:10px; padding:8px 0; border-bottom:1px dashed var(--border);}
+.fit div:last-child{border-bottom:0;}
+.fit b{color:var(--muted); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; font-family:var(--font-mono);}
+.disclaimer{margin-top:12px; font-size:12px; color:var(--muted); border-left:2px solid var(--gold); padding-left:10px;}
+
+/* KPI */
+.kpi{padding:14px 14px 10px; display:flex; flex-direction:column; gap:4px; min-width:0;}
+.kpi .k-label{font:600 10.5px var(--font-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted);}
+.kpi .k-value{font-size:28px; font-weight:750; letter-spacing:-.02em; font-variant-numeric:tabular-nums; line-height:1.15;}
+.kpi .k-sub{font-size:12px; color:var(--text-2);}
+.kpi svg{width:100%; height:30px; margin-top:4px;}
+
+/* pills */
+.pill{display:inline-flex; align-items:center; gap:6px; font:600 11px var(--font-mono); padding:3px 9px; border-radius:999px; border:1px solid currentColor; white-space:nowrap;}
+.pill::before{content:""; width:7px; height:7px; border-radius:50%; background:currentColor;}
+.pill.ok{color:var(--ok);} .pill.warn{color:var(--warn);} .pill.crit{color:var(--crit);} .pill.info{color:var(--accent);}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 transparent;} 50%{box-shadow:0 0 0 4px color-mix(in srgb, currentColor 22%, transparent);}}
+.pill.warn,.pill.crit{animation:pulse 2.4s ease-in-out infinite;}
+
+/* tables */
+.tbl-wrap{overflow-x:auto; border-radius:var(--r-md); border:1px solid var(--border);}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th{text-align:left; font:600 10.5px var(--font-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); background:var(--glass); padding:9px 10px; border-bottom:1px solid var(--border); white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top; color:var(--text-2);}
+tr:last-child td{border-bottom:0;}
+td b{color:var(--text);}
+tr.clickable:hover td{background:var(--glass);}
+
+/* architecture */
+.arch-ctrl{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;}
+.seg{border:1px solid var(--border-bright); background:var(--glass); color:var(--text-2); border-radius:999px; padding:6px 12px; font:600 12px var(--font-sans); cursor:pointer;}
+.seg[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:var(--inverse); border-color:transparent;}
+.arch-wrap{overflow-x:auto;}
+.arch-wrap svg{min-width:860px; width:100%; height:auto; display:block;}
+.node rect{fill:var(--bg-elev); stroke:var(--border-bright); stroke-width:1.2;}
+.node.hl rect{stroke:var(--accent); stroke-width:2;}
+.node text{fill:var(--text); font:600 13px var(--font-sans);}
+.node text.sub{fill:var(--muted); font:500 10.5px var(--font-mono);}
+.node{cursor:pointer;}
+.node:hover rect{fill:var(--panel-hover);}
+.node:focus-visible rect{stroke:var(--accent); stroke-width:2.5;}
+.edge{fill:none; stroke:var(--accent); stroke-width:1.6; opacity:.85;}
+.edge.dim{stroke:var(--muted); opacity:.45; stroke-dasharray:4 4;}
+.edge.crit{stroke:var(--crit); stroke-dasharray:5 4;}
+.elabel{fill:var(--text-2); font:500 10.5px var(--font-mono);}
+.zone{fill:var(--glass); stroke:var(--border); stroke-dasharray:3 4;}
+.zlabel{fill:var(--muted); font:600 10px var(--font-mono); letter-spacing:.12em;}
+.arch-note{margin-top:10px; font-size:13px; color:var(--text-2);}
+
+/* scorer */
+.weights{display:grid; gap:10px;}
+.wrow{display:grid; grid-template-columns:minmax(0,1fr) 120px 22px; align-items:center; gap:10px; font-size:13px;}
+.wrow input[type=range]{width:100%; accent-color:var(--accent);}
+.bars{display:grid; gap:12px;}
+.bar-row{display:grid; gap:6px;}
+.bar-top{display:flex; justify-content:space-between; gap:8px; font-size:13px;}
+.bar-track{height:12px; border-radius:999px; background:var(--glass); border:1px solid var(--border); overflow:hidden;}
+.bar-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .4s ease;}
+.bar-row.lead .bar-fill{background:linear-gradient(90deg,var(--gold),var(--accent));}
+.release{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:12px; font-size:13px;}
+
+/* checklist */
+.chk-group h3{font-size:13px; font-family:var(--font-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;}
+.chk{display:grid; grid-template-columns:20px minmax(0,1fr); gap:10px; padding:8px 0; border-bottom:1px dashed var(--border); font-size:13px;}
+.chk:last-child{border-bottom:0;}
+.chk input{margin-top:3px; accent-color:var(--accent); width:16px; height:16px;}
+.chk .why{display:block; color:var(--muted); font-size:12px;}
+.progress{height:8px; border-radius:999px; background:var(--glass); border:1px solid var(--border); overflow:hidden; margin-top:8px;}
+.progress span{display:block; height:100%; background:linear-gradient(90deg,var(--ok),var(--accent)); transition:width .3s;}
+
+/* test plan */
+.filters{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+.status-btn{border:1px solid var(--border-bright); background:var(--glass); color:var(--text-2); border-radius:999px; padding:3px 10px; font:600 11px var(--font-mono); cursor:pointer; min-width:74px;}
+.status-btn[data-s="pass"]{color:var(--ok); border-color:var(--ok);}
+.status-btn[data-s="fail"]{color:var(--crit); border-color:var(--crit);}
+.chart-box{position:relative; height:260px;}
+
+/* gantt */
+.gantt{display:grid; gap:8px; min-width:720px;}
+.g-row{display:grid; grid-template-columns:190px minmax(0,1fr); gap:10px; align-items:center;}
+.g-track{position:relative; height:28px; background:var(--glass); border:1px solid var(--border); border-radius:8px;}
+.g-bar{position:absolute; top:3px; bottom:3px; border-radius:6px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:var(--inverse); font:700 10.5px var(--font-mono); display:flex; align-items:center; padding:0 8px; white-space:nowrap; overflow:hidden; cursor:pointer;}
+.g-scale{display:grid; grid-template-columns:190px minmax(0,1fr); gap:10px; font:500 10.5px var(--font-mono); color:var(--muted);}
+.g-ticks{display:flex; justify-content:space-between;}
+
+/* decision tree */
+.tree{display:grid; gap:10px;}
+.q{display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:13.5px;}
+.q .opts{display:flex; gap:6px;}
+.verdict{padding:12px 14px; border-radius:var(--r-md); border:1px solid var(--border-bright); background:var(--glass); font-size:13.5px;}
+.verdict.go{border-color:var(--ok);} .verdict.hold{border-color:var(--warn);} .verdict.back{border-color:var(--crit);}
+
+/* code */
+pre.code{margin:0; padding:14px; background:var(--bg-mid); border:1px solid var(--border); border-radius:var(--r-md); overflow-x:auto; font:12px/1.55 var(--font-mono); color:var(--text-2);}
+.code-head{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;}
+
+/* modal */
+.modal-root{position:fixed; inset:0; z-index:100; display:none;}
+.modal-root.open{display:block;}
+.modal-backdrop{position:absolute; inset:0; background:rgba(2,6,23,.62); backdrop-filter:blur(4px);}
+.modal-shell{position:absolute; top:max(4vh, env(safe-area-inset-top, 0px)); left:50%; transform:translateX(-50%); width:min(880px, calc(100% - 32px)); max-height:90vh; display:flex; flex-direction:column; background:var(--bg-elev); border:1px solid var(--border-bright); border-radius:var(--r-lg); box-shadow:0 30px 80px rgba(0,0,0,.5);}
+.modal-header{display:flex; justify-content:space-between; gap:12px; padding:18px 20px 10px; border-bottom:1px solid var(--border);}
+.modal-close{background:var(--glass); border:1px solid var(--border-bright); color:var(--text); border-radius:999px; width:34px; height:34px; font-size:18px; cursor:pointer; flex:none;}
+.modal-toc{display:flex; flex-wrap:wrap; gap:6px; padding:10px 20px; border-bottom:1px solid var(--border);}
+.modal-toc a{font:600 11px var(--font-mono); padding:3px 8px; border-radius:999px; border:1px solid var(--border); color:var(--text-2); text-decoration:none;}
+.modal-toc a:hover{border-color:var(--accent); color:var(--text);}
+.modal-body{padding:6px 20px 20px; overflow-y:auto;}
+.m-sec{padding:12px 0; border-bottom:1px dashed var(--border); scroll-margin-top:8px;}
+.m-sec:last-child{border-bottom:0;}
+.m-sec h4{font:600 11px var(--font-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:4px;}
+.m-sec p{color:var(--text-2); font-size:14px; max-width:75ch;}
+
+/* footer */
+.ucs-footer{margin-top:36px; border-top:1px solid var(--border); padding-block:24px 30px;}
+.ucs-footer-inner{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; align-items:start;}
+.ucs-footer-name{font-size:16px; font-weight:650;}
+.ucs-footer-title{font-size:11px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; margin-top:2px;}
+.ucs-footer-company{font-size:13px; margin-top:8px; font-family:var(--font-mono); color:var(--accent);}
+.ucs-footer-contact{display:flex; flex-direction:column; gap:4px; font-size:12px; font-family:var(--font-mono); color:var(--text-2); user-select:all;}
+.ucs-footer-meta{display:flex; flex-direction:column; gap:4px; text-align:right; font-family:var(--font-mono); font-size:12px;}
+.ucs-footer-version{color:var(--gold); font-weight:700;}
+.ucs-footer-date{color:var(--muted);}
+.ucs-footer-credit{margin-top:16px; font-size:11.5px; color:var(--muted); text-align:center;}
+
+/* responsive */
+@media (max-width:1180px){ .g6{grid-template-columns:repeat(3,minmax(0,1fr));} .g4{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:980px){
+  .app{grid-template-columns:minmax(0,1fr);}
+  .sidebar{position:fixed; top:0; left:0; bottom:0; width:min(300px,86vw); z-index:60; background:var(--bg-mid); transform:translateX(-105%); transition:transform .25s; padding-left:env(safe-area-inset-left, 0px); padding-top:calc(20px + env(safe-area-inset-top, 0px)); height:auto;}
+  body.nav-open .sidebar{transform:none; box-shadow:var(--shadow);}
+  .menu-btn{display:inline-flex;}
+  .hero{grid-template-columns:minmax(0,1fr);}
+  .g3,.g2{grid-template-columns:minmax(0,1fr);}
+}
+@media (max-width:560px){
+  .g6,.g4{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .kpi .k-value{font-size:23px;}
+  .wrow{grid-template-columns:minmax(0,1fr) 90px 22px;}
+  .ucs-footer-inner{grid-template-columns:minmax(0,1fr);}
+  .ucs-footer-meta{text-align:left;}
+  .topbar .crumbs{display:none;}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important; transition:none !important; scroll-behavior:auto !important;}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="brand">
+      <div class="brand-mark">MFA</div>
+      <div>
+        <div class="brand-name">Okta MFA · PeopleSoft Financials</div>
+        <div class="brand-sub">Command Center · v1</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="side-foot">
+      <span>Kenneth P. Barnes · UCS Solutions</span>
+      <a href="https://github.com/kennyb7322/okta-peoplesoft-mfa-command-center" target="_blank" rel="noopener">Source on GitHub ↗</a>
+      <span>Illustrative values · no client data</span>
+    </div>
+  </aside>
+
+  <main class="main" id="top">
+    <div class="topbar">
+      <div class="tb-actions"><button class="btn menu-btn" id="menuBtn" type="button" aria-controls="sidebar" aria-expanded="false">☰ Sections</button></div>
+      <div class="crumbs"><b>Enterprise Security Architect</b> · Okta MFA for PeopleSoft Financials · Albany, NY · 30 months</div>
+      <div class="tb-actions">
+        <a class="btn" href="https://github.com/kennyb7322/okta-peoplesoft-mfa-command-center" target="_blank" rel="noopener">GitHub ↗</a>
+        <button class="btn" id="themeBtn" type="button" aria-label="Switch color theme">◐ Theme</button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <div class="glass hero">
+        <div>
+          <div class="eyebrow">Implementation command center · v1</div>
+          <h1 style="margin-top:8px">Okta multifactor authentication for PeopleSoft Financials 9.2</h1>
+          <p class="lead">How I would run a 30-month Okta MFA rollout for a multi-agency PeopleSoft Financials environment as a technical resource to the existing project team — from current-state assessment and pattern decision through testing, enforcement waves, stabilization, and hand-off to operations.</p>
+          <div class="tags">
+            <span class="tag-pill">PeopleSoft 9.2 · PeopleTools 8.6x</span>
+            <span class="tag-pill">Okta Identity Engine</span>
+            <span class="tag-pill">NIST SP 800-63B AAL2 / AAL3</span>
+            <span class="tag-pill">NIST 800-53 IA · AC · AU</span>
+            <span class="tag-pill">NYS ITS identity standards</span>
+          </div>
+          <div class="hero-actions">
+            <a class="btn primary" href="#decision">Score the integration patterns</a>
+            <a class="btn" href="#tests">Run the 60-case test plan</a>
+            <a class="btn" href="#coverage">See JD coverage</a>
+          </div>
+          <p class="disclaimer">Every number on this page is an illustrative planning value or a live count of what you tick. No client data is used. PeopleSoft and Okta behavior follows vendor documentation as of October 2026.</p>
+        </div>
+        <div class="glass pad" style="box-shadow:none">
+          <div class="eyebrow" style="margin-bottom:6px">Engagement</div>
+          <div class="fit">
+            <div><b>Role</b><span>Enterprise Security Architect — technical resource to the project team</span></div>
+            <div><b>Scope</b><span>Okta MFA for PeopleSoft Financials: design, integration, test, deploy, stabilize, transfer</span></div>
+            <div><b>Location</b><span>Albany, NY · 50% on-site · candidate newly relocated to Tarrytown, NY</span></div>
+            <div><b>Term</b><span>30 months · eight phases</span></div>
+            <div><b>Candidate</b><span>Kenneth P. Barnes · CISSP · Okta Certified Professional · worked at PeopleSoft</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid g6" id="kpis" style="margin-top:14px"></div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <div class="sec-head">
+        <div><div class="eyebrow">Design</div><h2>Sign-on architecture</h2>
+          <p>Choose a pattern to redraw the flow. Click any component for its nine-part detail. The red dashed path is the direct-to-PeopleSoft route that must be closed.</p></div>
+      </div>
+      <div class="glass pad">
+        <div class="arch-ctrl" role="group" aria-label="Integration pattern">
+          <button class="seg" type="button" data-pat="A" aria-pressed="false">A · Native SAML 2.0</button>
+          <button class="seg" type="button" data-pat="B" aria-pressed="true">B · Okta Access Gateway</button>
+          <button class="seg" type="button" data-pat="C" aria-pressed="false">C · Web-tier agent</button>
+        </div>
+        <div class="arch-wrap"><svg id="arch" viewBox="0 0 1000 450" role="img" aria-label="Sign-on architecture diagram"></svg></div>
+        <p class="arch-note" id="archNote"></p>
+      </div>
+    </section>
+
+    <!-- DECISION -->
+    <section id="decision">
+      <div class="sec-head">
+        <div><div class="eyebrow">Design</div><h2>Integration pattern decision</h2>
+          <p>Set the PeopleTools release and adjust what matters most. Scores are 1–5 per criterion; the weighted total decides the leader. This is the decision record I would bring to the design review.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="glass pad">
+          <div class="release" role="group" aria-label="PeopleTools release">
+            <span class="muted">Production PeopleTools:</span>
+            <button class="seg" type="button" data-rel="old" aria-pressed="true">8.60 – 8.62</button>
+            <button class="seg" type="button" data-rel="new" aria-pressed="false">8.63 or later</button>
+          </div>
+          <div class="weights" id="weights"></div>
+        </div>
+        <div class="glass pad">
+          <div class="bars" id="bars"></div>
+          <div class="grid g2" style="margin-top:14px" id="patCards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ASSESS -->
+    <section id="assess">
+      <div class="sec-head">
+        <div><div class="eyebrow">Design · Months 1–3</div><h2>Current-state assessment</h2>
+          <p>The questions I would answer with the PeopleSoft, middleware, directory, and security teams before design sign-off. Tick each one as it is answered.</p></div>
+        <div style="min-width:220px"><div class="hint" id="chkCount">0 of 24 answered</div><div class="progress"><span id="chkBar" style="width:0%"></span></div></div>
+      </div>
+      <div class="grid g3" id="checks"></div>
+    </section>
+
+    <!-- POLICY -->
+    <section id="policy">
+      <div class="sec-head">
+        <div><div class="eyebrow">Configuration</div><h2>Okta policy design</h2>
+          <p>Populations get authenticator strength in proportion to what their PeopleSoft access can do. Rules evaluate top to bottom; the first match wins.</p></div>
+      </div>
+      <div class="grid g6" id="pops"></div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="glass pad">
+          <h3 style="margin-bottom:10px">PeopleSoft app authentication policy</h3>
+          <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Rule</th><th>Conditions</th><th>Action</th></tr></thead><tbody id="rules"></tbody></table></div>
+        </div>
+        <div class="glass pad">
+          <h3 style="margin-bottom:10px">Authenticators</h3>
+          <div class="tbl-wrap"><table><thead><tr><th>Authenticator</th><th>Use</th><th>Status</th></tr></thead><tbody id="auths"></tbody></table></div>
+          <div class="code-head" style="margin-top:14px"><span class="hint">terraform/okta-mfa/main.tf (excerpt)</span><button class="btn" type="button" id="copyTf">Copy</button></div>
+<pre class="code" id="tfCode">resource "okta_app_signon_policy_rule" "ps_privileged" {
+  policy_id                   = okta_app_signon_policy.peoplesoft.id
+  name                        = "PS - Security and PeopleTools admins"
+  priority                    = 2
+  access                      = "ALLOW"
+  groups_included             = [okta_group.ps_privileged.id]
+  network_connection          = "ZONE"
+  network_includes            = [okta_network_zone.admin.id]
+  device_is_registered        = true
+  device_is_managed           = true
+  factor_mode                 = "2FA"
+  re_authentication_frequency = "PT0S" # prompt at every sign-in
+  constraints = [jsonencode({
+    possession = {
+      required          = true
+      phishingResistant = "REQUIRED"
+      userPresence      = "REQUIRED"
+    }
+  })]
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- PS MAPPING -->
+    <section id="psmap">
+      <div class="sec-head">
+        <div><div class="eyebrow">Configuration</div><h2>PeopleSoft security mapping</h2>
+          <p>Okta decides who the person is; PeopleSoft roles and permission lists still decide what they can do. These are the PeopleSoft settings and paths the MFA design has to touch.</p></div>
+      </div>
+      <div class="grid g3" id="psCards"></div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="glass pad">
+          <h3 style="margin-bottom:10px">Roles in scope and required strength</h3>
+          <div class="tbl-wrap"><table><thead><tr><th>Role / permission list group</th><th>Tier</th><th>Okta requirement</th></tr></thead><tbody id="roles"></tbody></table></div>
+        </div>
+        <div class="glass pad">
+          <div class="code-head"><span class="hint">sql/ps-security-audit.sql (read-only excerpt)</span><button class="btn" type="button" id="copySql">Copy</button></div>
+<pre class="code" id="sqlCode">-- 1. Users holding privileged permission lists (review every 6 months)
+WITH PRIV AS (
+  SELECT 'ALLPAGES' AS CLASSID FROM DUAL   -- example: replace with yours
+  UNION ALL SELECT '&lt;SECURITY_ADMIN_PERMLIST&gt;' FROM DUAL
+)
+SELECT DISTINCT RU.ROLEUSER AS OPRID, O.OPRDEFNDESC, RC.ROLENAME,
+       RC.CLASSID, O.ACCTLOCK, O.LASTSIGNONDTTM
+  FROM PSROLEUSER RU
+  JOIN PSROLECLASS RC ON RC.ROLENAME = RU.ROLENAME
+  JOIN PSOPRDEFN  O  ON O.OPRID     = RU.ROLEUSER
+  JOIN PRIV       P  ON P.CLASSID   = RC.CLASSID
+ ORDER BY RC.CLASSID, RU.ROLEUSER;
+
+-- 2. Active accounts with no sign-on in 90 days (dormant)
+SELECT OPRID, OPRDEFNDESC, LASTSIGNONDTTM
+  FROM PSOPRDEFN
+ WHERE ACCTLOCK = 0
+   AND (LASTSIGNONDTTM IS NULL OR LASTSIGNONDTTM &lt; SYSDATE - 90);</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCESS -->
+    <section id="access">
+      <div class="sec-head">
+        <div><div class="eyebrow">Configuration</div><h2>Access, exceptions &amp; standards</h2>
+          <p>Each control traced to the standard it satisfies and the design element that implements it.</p></div>
+      </div>
+      <div class="glass pad">
+        <div class="tbl-wrap"><table><thead><tr><th>Control</th><th>Standard</th><th>Implemented by</th></tr></thead><tbody id="stds"></tbody></table></div>
+      </div>
+      <div class="grid g3" style="margin-top:14px">
+        <div class="glass pad"><h3>Exception process</h3><p class="muted" style="margin-top:6px">Requested through the service desk with a business reason and a compensating control; approved by the information security officer; time-boxed to 30, 60, or 90 days; enforced by membership in an Okta exception group that expires automatically; reported monthly.</p></div>
+        <div class="glass pad"><h3>Account recovery</h3><p class="muted" style="margin-top:6px">Self-service recovery uses only approved factors. Service desk resets require identity verification first, are performed with a least-privilege help-desk role, and are logged. Privileged users need a stronger verification step.</p></div>
+        <div class="glass pad"><h3>Emergency access</h3><p class="muted" style="margin-top:6px">Two vaulted accounts with dual control for Okta or gateway outages. Use alerts the SIEM immediately; accounts disable automatically after 24 hours and are reviewed after every use.</p></div>
+      </div>
+    </section>
+
+    <!-- TESTS -->
+    <section id="tests">
+      <div class="sec-head">
+        <div><div class="eyebrow">Delivery</div><h2>Test plan · 60 cases</h2>
+          <p>Click a status to cycle Not run → Pass → Fail. Results stay in this browser and drive the KPI tiles and chart.</p></div>
+        <div class="tb-actions"><button class="btn" type="button" id="resetTests">Reset results</button></div>
+      </div>
+      <div class="grid g2">
+        <div class="glass pad">
+          <h3 style="margin-bottom:8px">Results by category</h3>
+          <div class="chart-box"><canvas id="testChart" aria-label="Test results by category"></canvas></div>
+        </div>
+        <div class="glass pad">
+          <h3 style="margin-bottom:8px">How the plan is used</h3>
+          <p class="muted">Cases are written against the nine JD areas and the PeopleSoft paths that MFA touches: sign-on, enrollment, access by role, recovery, exceptions, sessions, Integration Broker and batch regression, and negative tests that try to get around Okta.</p>
+          <p class="hint" id="testSummary" style="margin-top:12px"></p>
+          <div class="filters" id="filters" role="group" aria-label="Filter by category" style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div class="glass pad" style="margin-top:14px">
+        <div class="tbl-wrap" style="max-height:560px; overflow:auto"><table><thead><tr><th>ID</th><th>Category</th><th>Scenario</th><th>Expected result</th><th>Priority</th><th>Pattern</th><th>Status</th></tr></thead><tbody id="testRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- CUTOVER -->
+    <section id="cutover">
+      <div class="sec-head">
+        <div><div class="eyebrow">Delivery · Months 13–22</div><h2>Waves, cutover &amp; rollback</h2>
+          <p>A pilot and five enforcement waves. User counts are illustrative planning values. Wave dates avoid month-end and state fiscal year-end close.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="glass pad">
+          <h3 style="margin-bottom:8px">Users per wave (planning)</h3>
+          <div class="chart-box"><canvas id="waveChart" aria-label="Users per wave"></canvas></div>
+        </div>
+        <div class="glass pad">
+          <h3 style="margin-bottom:8px">Rollback decision</h3>
+          <div class="tree" id="tree"></div>
+        </div>
+      </div>
+      <div class="glass pad" style="margin-top:14px">
+        <h3 style="margin-bottom:10px">Wave runbook</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>When</th><th>Activity</th><th>Gate</th></tr></thead><tbody id="runbook"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- MONITOR -->
+    <section id="monitor">
+      <div class="sec-head">
+        <div><div class="eyebrow">Delivery</div><h2>Logging &amp; monitoring</h2>
+          <p>Okta System Log, gateway logs, and PeopleSoft sign-on audit records in one SIEM, kept for at least a year. The chart uses simulated pilot telemetry to show the dashboard; it is not real data.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="glass pad">
+          <h3 style="margin-bottom:8px">Sign-in outcomes · simulated 14-day pilot</h3>
+          <div class="chart-box"><canvas id="telChart" aria-label="Simulated sign-in outcomes"></canvas></div>
+        </div>
+        <div class="glass pad">
+          <h3 style="margin-bottom:10px">Detections</h3>
+          <div class="tbl-wrap"><table><thead><tr><th>Detection</th><th>Logic</th><th>Severity</th></tr></thead><tbody id="dets"></tbody></table></div>
+        </div>
+      </div>
+      <div class="glass pad" style="margin-top:14px">
+        <h3 style="margin-bottom:10px">Events that matter</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>Event</th><th>Meaning</th><th>Used for</th></tr></thead><tbody id="events"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap">
+      <div class="sec-head">
+        <div><div class="eyebrow">Program</div><h2>30-month roadmap</h2>
+          <p>Eight phases with overlaps where they save time. Click a phase for activities, gates, and what comes next.</p></div>
+      </div>
+      <div class="glass pad"><div class="tbl-wrap" style="border:0; padding-right:14px"><div class="gantt" id="gantt"></div></div></div>
+    </section>
+
+    <!-- RAID -->
+    <section id="raid">
+      <div class="sec-head">
+        <div><div class="eyebrow">Program</div><h2>Risks &amp; dependencies</h2>
+          <p>The risks I would raise in the first status meeting, with the mitigation built into the plan.</p></div>
+      </div>
+      <div class="grid g2">
+        <div class="glass pad"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead><tbody id="risks"></tbody></table></div></div>
+        <div class="glass pad"><h3 style="margin-bottom:10px">Dependencies</h3><div class="tbl-wrap"><table><thead><tr><th>Team</th><th>Needed for MFA</th></tr></thead><tbody id="deps"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <!-- KT -->
+    <section id="kt">
+      <div class="sec-head">
+        <div><div class="eyebrow">Program · Months 25–30</div><h2>Documentation &amp; knowledge transfer</h2>
+          <p>Shadow, then reverse-shadow, then independent operation. Hand-off is complete when operations staff run the environment without the architect.</p></div>
+      </div>
+      <div class="grid g4" id="deliv"></div>
+    </section>
+
+    <!-- COVERAGE -->
+    <section id="coverage">
+      <div class="sec-head">
+        <div><div class="eyebrow">Fit</div><h2>Job description coverage map</h2>
+          <p>Every responsibility, minimum qualification, and preferred qualification, linked to the section that demonstrates it and the experience behind it.</p></div>
+      </div>
+      <div class="glass pad"><div class="tbl-wrap"><table><thead><tr><th>Item</th><th>Requirement</th><th>Shown in</th><th>Experience</th></tr></thead><tbody id="cov"></tbody></table></div></div>
+    </section>
+
+    <!-- CANDIDATE -->
+    <section id="candidate">
+      <div class="sec-head">
+        <div><div class="eyebrow">Candidate</div><h2>Kenneth P. Barnes</h2>
+          <p>Enterprise Security Architect · Founder, CTO &amp; CISO of UCS Solutions (est. 1993) · 400+ engagements.</p></div>
+      </div>
+      <div class="grid g3">
+        <div class="glass pad"><h3>PeopleSoft</h3><p class="muted" style="margin-top:6px">Worked at PeopleSoft and directly for customers implementing and migrating PeopleSoft Financials, HR, and Student (Campus Solutions): 6 higher-education institutions, 8 government agencies, additional state agencies, and manufacturers including Altria and Navistar International. Authored the PeopleSoft 9.2 → Oracle Fusion Cloud architecture for Jack Henry.</p></div>
+        <div class="glass pad"><h3>Identity &amp; MFA</h3><p class="muted" style="margin-top:6px">Okta SSO, MFA, Lifecycle Management, and Workflows. SAML / OIDC federation, Conditional Access, MFA, and PIM for 12,000+ identities at Texas DPS under CJIS. 60+ Zero Trust implementations. CISSP, Okta Certified Professional, SABSA Master.</p></div>
+        <div class="glass pad"><h3>Availability</h3><p class="muted" style="margin-top:6px">Newly relocated to Tarrytown, NY, residing there 50% of the time and available 50% on-site in Albany for the full 30 months. U.S. citizen. W-2, 1099, or C2C through UCS Solutions.</p>
+          <div class="hero-actions"><a class="btn" href="https://github.com/kennyb7322" target="_blank" rel="noopener">github.com/kennyb7322 ↗</a></div></div>
+      </div>
+    </section>
+
+    <footer class="ucs-footer">
+      <div class="ucs-footer-inner">
+        <div>
+          <div class="ucs-footer-name">Kenneth P. Barnes</div>
+          <div class="ucs-footer-title">Founder · CTO · CISO</div>
+          <div class="ucs-footer-company">UCS Solutions · est. 1993</div>
+        </div>
+        <div class="ucs-footer-contact">
+          <span>KBarnes@ucsolutions.com</span>
+          <span>815-713-4151</span>
+          <span>804-356-5505</span>
+        </div>
+        <div class="ucs-footer-meta">
+          <span class="ucs-footer-version">v1</span>
+          <span class="ucs-footer-date">October 26, 2026</span>
+        </div>
+      </div>
+      <div class="ucs-footer-credit">
+        Designed and delivered by Kenneth P. Barnes · UCS Solutions ·
+        30+ years · 400+ client engagements · CISSP · CISM · CCSP · CRISC · CEH · TOGAF · SABSA · PMP · PgMP · SAFe · Six Sigma Black Belt
+      </div>
+    </footer>
+  </main>
+</div>
+
+<div id="modal-root" class="modal-root" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-shell">
+    <header class="modal-header">
+      <div><div class="eyebrow" id="modal-eyebrow">Detail</div><h2 id="modal-title">—</h2></div>
+      <button class="modal-close" type="button" data-close aria-label="Close detail">×</button>
+    </header>
+    <nav class="modal-toc" id="modal-toc" aria-label="Jump to"></nav>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+/* ============================================================
+   Okta MFA · PeopleSoft Financials — Implementation Command Center v1
+   Data layer. Illustrative engagement values; no client data.
+   Kenneth P. Barnes · UCS Solutions · est. 1993
+   ============================================================ */
+
+const NINE = ['What it is', 'How it works', 'Where used', 'Use cases', 'Examples', 'Dependencies', 'Interdependencies', 'When to use', 'Future thinking'];
+
+/* Each DRILL entry: { eyebrow, title, s:[9 strings in NINE order] } */
+const DRILL = {
+  /* ---------------- KPIs ---------------- */
+  'kpi-tests': { eyebrow: 'KPI · Testing', title: 'Test cases passed', s: [
+    'A live count of the 60 test cases in the Test Plan section marked Pass. Tick results in the plan and this tile, the chart, and the readiness score update together.',
+    'Each case carries an ID, category, scenario, expected result, priority, and the integration pattern it applies to. Clicking a status cycles Not run → Pass → Fail. Results are kept in this browser only.',
+    'System integration testing, security testing, user acceptance testing with finance users, and the regression run before every enforcement wave.',
+    'Go / no-go evidence for the pilot and each wave; defect triage with the project team; proof that Integration Broker and batch are unaffected.',
+    'TC-53 confirms a direct PIA URL is blocked; TC-47 confirms Process Scheduler jobs still run under scheduled user IDs without interactive MFA.',
+    'A non-production Okta tenant or preview org, a PeopleSoft test environment refreshed from production security data, test accounts for every population.',
+    'Feeds the Cutover gate (no open critical or high defects) and the RAID log when a case fails.',
+    'From the end of Build (month 9) through the last production wave; rerun the regression subset before each wave.',
+    'Automate the sign-on and negative tests with a headless browser run nightly against non-production so configuration drift is caught before users see it.',
+  ] },
+  'kpi-readiness': { eyebrow: 'KPI · Assessment', title: 'Current-state checks complete', s: [
+    'Progress through the current-state assessment checklist: the facts that must be known about the existing PeopleSoft authentication environment before a design can be signed off.',
+    'Each item is a discovery question with the reason it matters. Ticking an item records it as answered in this browser and updates this tile.',
+    'Months 1–3 of the engagement, in working sessions with the PeopleSoft administrators, web and middleware team, directory team, security office, and finance functional leads.',
+    'Finding bypass paths early, sizing user populations, confirming the PeopleTools release, and identifying shared or generic accounts that cannot carry MFA.',
+    'Confirming whether sign-on PeopleCode already calls LDAP authentication, or whether the web profile already has a custom sign-on page.',
+    'Read access to the web profile, sign-on PeopleCode, directory configuration, load-balancer rules, and the PSOPRDEFN / PSROLEUSER tables.',
+    'Answers drive the pattern scorer, the Okta population design, and the risk register.',
+    'Before the design review; revisit when a PeopleTools upgrade or infrastructure change is announced.',
+    'Keep the checklist as a living configuration baseline that operations staff re-verify each quarter after hand-off.',
+  ] },
+  'kpi-pattern': { eyebrow: 'KPI · Design', title: 'Leading integration pattern', s: [
+    'The integration pattern with the highest weighted score in the Pattern Decision section, recalculated whenever weights or the PeopleTools release change.',
+    'Each pattern is scored 1–5 against seven criteria. Weights (0–5) reflect what this organization values. Score = Σ(weight × score).',
+    'The design phase decision record, reviewed with the project team and the security office.',
+    'Making the trade-off between native SAML (needs PeopleTools 8.63) and Okta Access Gateway (works now) explicit and repeatable.',
+    'On PeopleTools 8.60–8.62 the gateway pattern usually leads; switch the release to 8.63+ and native SAML 2.0 pulls ahead.',
+    'Confirmed PeopleTools release and upgrade roadmap, network ownership of the web tier, Okta licensing for Access Gateway if pattern B is chosen.',
+    'Changes the architecture diagram, the test cases that apply, and the cutover runbook.',
+    'At design sign-off; revisit if a PeopleTools upgrade lands mid-engagement.',
+    'A gateway-first rollout can migrate to native SAML after an 8.63 upgrade with no change to users, because Okta policies stay the same.',
+  ] },
+  'kpi-waves': { eyebrow: 'KPI · Deployment', title: 'Enforcement waves', s: [
+    'The production rollout is a pilot plus five enforcement waves, grouped by business unit so that support load and business risk stay contained.',
+    'Each wave has an enrollment window (users enroll while MFA is optional), an enforcement date, and a hypercare period. Rollback is tested before each wave.',
+    'Months 13–22 of the plan, coordinated with the service desk, finance leadership, and change control.',
+    'Avoiding month-end close and state fiscal year-end (March 31 for New York State) for enforcement dates; staffing the service desk for enrollment peaks.',
+    'Pilot: IT and security staff. Wave 1: central finance. Waves 2–4: agencies grouped by size. Wave 5: remaining users and approvers with step-up.',
+    'Directory accuracy for wave assignment, help-desk scripts, user communications, Okta group rules per wave.',
+    'Wave gates depend on the test plan, monitoring dashboards, and the rollback decision.',
+    'After the pilot succeeds and the go / no-go board approves.',
+    'Later waves can shrink enrollment windows as self-enrollment rates rise; use pilot data to set them.',
+  ] },
+  'kpi-coverage': { eyebrow: 'KPI · Fit', title: 'JD requirements mapped', s: [
+    'Every responsibility, minimum qualification, and preferred qualification in the Enterprise Security Architect description, mapped to a section of this command center and to resume evidence.',
+    'The Coverage Map section lists each requirement with the section that demonstrates it and the experience behind it.',
+    'Interview preparation and evaluation against the requirement list.',
+    'Letting an evaluator check each requirement in one place instead of searching the resume.',
+    'Requirement 5 · Security & Access Management maps to the Access & Exceptions section and to TXDPS PIM and Conditional Access work.',
+    'The job description text and the resume.',
+    'Links to every other section.',
+    'During candidate review and the first weeks of onboarding.',
+    'Turns into the engagement acceptance checklist once work starts.',
+  ] },
+  'kpi-months': { eyebrow: 'KPI · Plan', title: '30-month engagement', s: [
+    'The full engagement length from the job description, divided into eight phases from mobilization to operational hand-off.',
+    'Phases overlap where it saves time — testing starts while configuration finishes — and every phase ends with exit criteria.',
+    'Project planning, status reporting, and resource forecasting with the existing project team.',
+    'Showing where the architect is most needed (design, test, cutover) and where effort tapers into stabilization and knowledge transfer.',
+    'Months 15–22 carry the production waves; months 25–30 carry hand-off and the enhancement roadmap.',
+    'Project sponsor priorities, change-freeze calendars, PeopleTools upgrade timing.',
+    'Drives the Roadmap, Waves, and Knowledge Transfer sections.',
+    'From mobilization; re-baseline at each phase gate.',
+    'The last phase leaves a roadmap for passwordless sign-in and phishing-resistant expansion so the investment keeps paying back.',
+  ] },
+
+  /* ---------------- Architecture nodes ---------------- */
+  'node-users': { eyebrow: 'Architecture · Users', title: 'User populations', s: [
+    'The people who sign in to PeopleSoft Financials: general finance users, approvers and payment releasers, security and PeopleTools administrators, and occasional or remote users.',
+    'Each population maps to an Okta group and an authentication policy rule with its own authenticator strength and session lifetime.',
+    'Agency finance offices, central accounting, procurement, accounts payable, and technical administration.',
+    'Applying stronger MFA where the risk is (payments, security administration) without burdening every user.',
+    'An AP approver uses Okta FastPass and is prompted again before payment release; a general user uses Okta Verify push with number challenge.',
+    'Accurate directory attributes for agency, job role, and privileged status; HR or directory feed into Okta.',
+    'Populations decide which test cases apply and which wave a user is in.',
+    'Defined in design; refreshed as roles change.',
+    'Adding device assurance per population lets managed-device users skip prompts while unmanaged devices get stronger checks.',
+  ] },
+  'node-okta': { eyebrow: 'Architecture · Identity provider', title: 'Okta Identity Engine', s: [
+    'The identity provider that authenticates users, enforces MFA, evaluates risk, and issues the session or assertion PeopleSoft trusts.',
+    'Global session policy sets the Okta session; application authentication policies decide which authenticators each population must satisfy; enrollment policy controls which authenticators users may register.',
+    'Every PeopleSoft sign-in, plus the Okta dashboard and any other applications already federated.',
+    'MFA enforcement, adaptive rules by network zone and device, ThreatInsight blocking of suspicious IPs, lifecycle deactivation of leavers.',
+    'Rule order for the PeopleSoft app: emergency accounts → privileged administrators → approvers → general users → deny.',
+    'Directory or HR source for users and groups, network zone definitions, an Okta Access Gateway license if pattern B is chosen.',
+    'Feeds the SIEM through System Log streaming; drives the service desk recovery process.',
+    'Always on the sign-in path once a wave is enforced.',
+    'Okta Identity Threat Protection can end sessions when risk changes mid-session, which matters for long finance sessions.',
+  ] },
+  'node-gateway': { eyebrow: 'Architecture · Integration point', title: 'Okta Access Gateway or native SAML', s: [
+    'The component that turns an Okta authentication into a PeopleSoft session. Pattern A uses PeopleTools 8.63 native SAML 2.0; pattern B uses Okta Access Gateway as a reverse proxy that passes the user ID in a header.',
+    'Pattern A: PeopleSoft is the SAML service provider and validates the signed assertion. Pattern B: the gateway authenticates the user with Okta, then forwards the request with an identity header that sign-on PeopleCode trusts.',
+    'In front of, or inside, the PeopleSoft web tier for every PIA request.',
+    'Delivering SSO and MFA to PeopleSoft without changing application code.',
+    'Pattern B header trust is restricted so that only requests arriving from gateway addresses are accepted; anything else falls back to an error page.',
+    'PeopleTools release (A), gateway hosting and certificates (B), load-balancer changes, DNS.',
+    'Changes the load-balancer and web-server path and the negative tests (header spoofing, assertion replay).',
+    'Pattern A when on 8.63 or upgrading soon; pattern B when the current release must be kept.',
+    'A gateway deployment can later step aside for native SAML with the same Okta policies.',
+  ] },
+  'node-lb': { eyebrow: 'Architecture · Network', title: 'Load balancer & network controls', s: [
+    'The load balancer and firewall rules in front of the PeopleSoft web servers.',
+    'Terminates or passes TLS, distributes sessions with persistence, and, in pattern B, accepts traffic to the web servers only from the gateway.',
+    'The PeopleSoft production and non-production web tiers.',
+    'Closing the direct-PIA bypass path; keeping sessions sticky so sign-on state is not lost.',
+    'A rule that rejects requests to /psp/ and /psc/ paths unless they arrive from the gateway pool.',
+    'Network team change windows, certificate management, health-check URLs that do not require sign-on.',
+    'Rollback in pattern B can be a load-balancer pool switch back to the pre-MFA path.',
+    'Configured during Build; verified by TC-53 before each wave.',
+    'Move header injection to mutual TLS between gateway and web tier for stronger trust.',
+  ] },
+  'node-web': { eyebrow: 'Architecture · PeopleSoft web tier', title: 'PIA web server & web profile', s: [
+    'The PeopleSoft Pure Internet Architecture web server (WebLogic) and the web profile that governs sign-on, timeouts, and cookies.',
+    'The web profile sets the authentication domain, inactivity warning and timeout, sign-on and logout pages, and cookie rules; SAML settings live here in pattern A.',
+    'Every browser request to PeopleSoft Financials.',
+    'Aligning the PeopleSoft timeout with the Okta session and organizational session-lock rules; redirecting logout to Okta.',
+    'Inactivity warning at 13 minutes and timeout at 15 minutes to match a 15-minute session-lock standard; logout URL pointing to the Okta sign-out endpoint.',
+    'Web server domain configuration, PeopleTools release, certificates.',
+    'Works with sign-on PeopleCode on the application server; timeouts interact with Okta session lifetime.',
+    'Changed during Build in non-production first; promoted per wave.',
+    'Fluid and mobile clients follow the same web profile, so one change covers them.',
+  ] },
+  'node-app': { eyebrow: 'Architecture · Application server', title: 'Application server & sign-on PeopleCode', s: [
+    'The application server domain (Tuxedo) that runs sign-on PeopleCode and creates the PeopleSoft session and PS_TOKEN.',
+    'Sign-on PeopleCode runs at every sign-in. In pattern B it reads the trusted identity header, maps it to an OPRID, and calls SetAuthenticationResult. In pattern A the SAML framework does the mapping.',
+    'Every PeopleSoft sign-in, including deep links from workflow emails.',
+    'Mapping the Okta login to the PeopleSoft user, refusing locked or unknown users, and writing an audit record.',
+    'If the header is absent or the request is not from the gateway, the PeopleCode refuses the sign-in instead of falling back to a password.',
+    'Signon PeopleCode configuration page, PSOPRDEFN, node trust settings for PS_TOKEN.',
+    'Integration Broker and Process Scheduler use their own authentication and must not be routed through this code path.',
+    'Changed in Build; reviewed line by line in design review.',
+    'Retire custom header code after a move to native SAML.',
+  ] },
+  'node-db': { eyebrow: 'Architecture · Security data', title: 'PeopleSoft security tables', s: [
+    'The PeopleTools tables that hold users, roles, and permissions: PSOPRDEFN, PSROLEUSER, PSROLECLASS, PSCLASSDEFN, PSAUTHITEM, and PSACCESSLOG.',
+    'Okta decides who the person is; these tables still decide what the person can do. MFA changes authentication, not authorization.',
+    'Every component, page, and query the user opens.',
+    'Confirming OPRID mapping, finding shared and dormant accounts, proving roles are unchanged after cutover.',
+    'A read-only query lists OPRIDs with no matching Okta user, and another lists users holding security-administration permission lists.',
+    'Read-only database access for assessment; DBA support for audit queries.',
+    'Feeds the identity mapping, the population design, and the bypass detection rule (PSACCESSLOG entry with no matching Okta event).',
+    'During assessment and after each wave.',
+    'Use the same queries as recurring access reviews in operations.',
+  ] },
+  'node-ib': { eyebrow: 'Architecture · Integrations', title: 'Integration Broker & batch', s: [
+    'PeopleSoft Integration Broker (gateway and nodes) and Process Scheduler, which move data between PeopleSoft and other systems without a person signing in.',
+    'Integration Broker authenticates nodes with passwords, certificates and two-way SSL, or WS-Security tokens. Process Scheduler runs jobs under run-control user IDs. Neither should depend on interactive Okta sign-in.',
+    'Bank files, payment interfaces, budget and HR feeds, workflow notifications, scheduled nVision and Query reports.',
+    'Keeping finance operations running on the day MFA is enforced.',
+    'Inbound REST consumers authenticate with node credentials; the IB gateway URL is excluded from the gateway and restricted by network.',
+    'An inventory of nodes, service operations, and scheduled jobs; certificate inventory.',
+    'Regression tests TC-45 to TC-52; the cutover runbook includes an interface check after each wave.',
+    'Inventoried in assessment; regression-tested before every wave.',
+    'Move integration authentication to OAuth client credentials where PeopleTools REST supports it.',
+  ] },
+  'node-dir': { eyebrow: 'Architecture · Directory', title: 'Directory & provisioning', s: [
+    'The authoritative directory (Active Directory or LDAP) and the provisioning flow that keeps Okta and PeopleSoft users aligned.',
+    'Okta imports users and groups from the directory; an attribute carries the PeopleSoft OPRID. PeopleSoft may also use LDAP directory authentication today, which the assessment must find.',
+    'User onboarding, transfers, and terminations.',
+    'Wave assignment by agency, privileged-group membership, prompt deactivation of leavers.',
+    'A leaver disabled in the directory is deactivated in Okta and can no longer reach PeopleSoft, even if a PeopleSoft password still exists (TC-26).',
+    'Directory data quality, an agent or connector for Okta, a stable OPRID attribute.',
+    'Feeds Okta groups, which feed policies and waves.',
+    'From assessment onward.',
+    'Okta Workflows can automate joiner-mover-leaver steps that are manual today.',
+  ] },
+  'node-siem': { eyebrow: 'Architecture · Monitoring', title: 'SIEM & monitoring', s: [
+    'The consolidated log platform that receives Okta System Log events, gateway logs, PeopleSoft sign-on audit records, and web-server logs.',
+    'Okta log streaming or the System Log API forwards events in near real time; PeopleSoft and gateway logs are shipped by the existing agents. Detections run on the combined data.',
+    'Security operations, the project team during waves, and audit.',
+    'Spotting MFA fatigue attacks, PeopleSoft sessions that bypassed Okta, emergency-account use, and enrollment problems.',
+    'Alert when PSACCESSLOG shows a sign-in with no Okta SSO event for that user in the preceding two minutes.',
+    'Log retention of at least one year under the applicable logging standard; time synchronization across sources.',
+    'Dashboards feed wave go / no-go decisions and stabilization KPIs.',
+    'Connected in Build, before the pilot.',
+    'Add user-behavior baselines so unusual finance activity after a factor reset is flagged.',
+  ] },
+  'node-desk': { eyebrow: 'Architecture · Support', title: 'Service desk & recovery', s: [
+    'The service desk process for enrollment help, lost devices, factor resets, and exceptions.',
+    'Agents verify identity before any reset, use Okta admin functions with least privilege, and record each action. Self-service recovery uses only approved factors.',
+    'Every wave, with peaks in the enrollment window.',
+    'Lost or replaced phones, users without smartphones, travel, locked accounts.',
+    'A user with a new phone calls the desk, passes identity verification, the agent resets Okta Verify, and the user re-enrolls (TC-27).',
+    'Scripts and knowledge articles, Okta help-desk admin role, a supply of FIDO2 keys for users without phones.',
+    'Help-desk volume is a rollback trigger and a stabilization KPI.',
+    'Trained before the pilot; staffed up for each enrollment window.',
+    'Identity verification with a stronger proofing step (for example a video call or in-person check) for privileged users.',
+  ] },
+
+  /* ---------------- Patterns ---------------- */
+  'pat-A': { eyebrow: 'Pattern A', title: 'Native SAML 2.0 (PeopleTools 8.63)', s: [
+    'PeopleSoft as a SAML 2.0 service provider with Okta as the identity provider, using the native SAML support introduced in PeopleTools 8.63 (generally available on OCI in July 2026).',
+    'The user starts at PeopleSoft or the Okta dashboard; Okta authenticates and applies MFA, then posts a signed assertion that PeopleSoft validates and maps to an OPRID.',
+    'Environments already on 8.63 or with an upgrade on the engagement timeline.',
+    'Standards-based SSO and MFA, plus TOTP two-factor and a 2FA API for step-up on selected transactions.',
+    'Payment release pages call the 2FA API so approvers confirm with a second factor at the moment of risk.',
+    'PeopleTools 8.63 (on-premises availability follows OCI), signing certificates, metadata exchange.',
+    'Removes the gateway hop; changes the negative tests to assertion replay and signature checks.',
+    'When the release is available; the cleanest long-term design.',
+    'Pair with Okta phishing-resistant authenticators so the whole path meets AAL3 for administrators.',
+  ] },
+  'pat-B': { eyebrow: 'Pattern B', title: 'Okta Access Gateway (header-based)', s: [
+    'Okta Access Gateway placed in front of PeopleSoft 9.2 as a reverse proxy. After Okta authentication and MFA it forwards requests with the user ID in an HTTP header.',
+    'Sign-on PeopleCode trusts the header only from the gateway and issues the PeopleSoft session. The gateway also handles logout and session checks.',
+    'PeopleSoft environments on current PeopleTools releases that cannot wait for an upgrade.',
+    'Bringing MFA to PeopleSoft now, without application changes.',
+    'Okta documents a PeopleSoft reference architecture for Access Gateway with external and internal URLs and a header attribute mapped from the Okta login.',
+    'Okta Access Gateway license and hosting, certificates, load-balancer and firewall changes so the web tier accepts only gateway traffic.',
+    'Adds a component to monitor and patch; adds header-spoofing tests.',
+    'When the release must be kept and MFA is needed within the engagement window.',
+    'Plan the later switch to pattern A after an upgrade; users will not notice the change.',
+  ] },
+  'pat-C': { eyebrow: 'Pattern C', title: 'Web-tier agent or partner gateway', s: [
+    'An existing access manager (for example Oracle Access Manager WebGate) or an Okta partner gateway enforcing Okta authentication in front of the PeopleSoft web tier.',
+    'The agent intercepts requests, redirects to Okta, then passes identity to PeopleSoft through a header or token as in pattern B.',
+    'Organizations that already run such a component for other Oracle applications.',
+    'Reusing existing infrastructure and skills.',
+    'An organization with OAM already protecting other Oracle applications federates OAM to Okta and keeps WebGate on the PeopleSoft web servers.',
+    'The existing component, its support contract, and the skills to run it.',
+    'Two identity systems in the path increase troubleshooting effort.',
+    'Only when the component already exists and is supported.',
+    'Usually a stepping stone to pattern A or B.',
+  ] },
+  'pat-D': { eyebrow: 'Add-on D', title: 'Transaction step-up', s: [
+    'A second MFA prompt on high-risk actions, applied on top of whichever sign-on pattern is chosen.',
+    'Selected pages call the PeopleTools 2FA API (8.63) or a partner tool; the user must confirm with a factor before the action completes.',
+    'Payment release, vendor bank-account changes, security administration, and changes to direct-deposit details.',
+    'Reducing fraud and insider risk where a session alone is not enough assurance.',
+    'Changing a supplier remit-to bank account requires a fresh FIDO2 or Okta Verify confirmation.',
+    'A short list of pages, testing of each one, and clear user messages.',
+    'Works with population policies; approvers already use stronger authenticators.',
+    'After base MFA is stable, usually in the last waves.',
+    'Risk-based step-up driven by transaction amount and user behavior.',
+  ] },
+
+  /* ---------------- Populations ---------------- */
+  'pop-general': { eyebrow: 'Policy · Population', title: 'General finance users', s: [
+    'Staff who enter and inquire on transactions: vouchers, requisitions, journals, receipts, reports.',
+    'Okta Verify push with number challenge or Okta FastPass satisfies AAL2. Okta session up to 12 hours; PeopleSoft idle timeout 15 minutes.',
+    'All agencies and central finance.',
+    'Strong, low-friction MFA for the largest population.',
+    'A user signs in each morning with FastPass on a managed laptop and is not prompted again until the session ends.',
+    'Okta Verify on a phone or managed desktop; a FIDO2 key for users without one.',
+    'Wave assignment, help-desk volume, enrollment rate KPI.',
+    'From wave 1 onward.',
+    'Passwordless sign-in once FastPass coverage is high.',
+  ] },
+  'pop-approver': { eyebrow: 'Policy · Population', title: 'Approvers & payment releasers', s: [
+    'Users who approve vouchers, release payments, or approve journals above thresholds.',
+    'Phishing-resistant authenticator preferred (FastPass with biometrics or FIDO2); step-up for payment release and vendor bank changes.',
+    'Accounts payable, treasury, central accounting.',
+    'Protecting the actions that move money.',
+    'A payment releaser is prompted for FIDO2 before the payment run is released.',
+    'Accurate role-to-group mapping from PeopleSoft roles to Okta groups.',
+    'Step-up add-on D; segregation-of-duties reviews.',
+    'Enforced in the wave that contains the user; step-up after base MFA is stable.',
+    'Amount-based step-up thresholds.',
+  ] },
+  'pop-admin': { eyebrow: 'Policy · Population', title: 'Security & PeopleTools administrators', s: [
+    'Users who hold security administration, PeopleTools, or system administration permission lists.',
+    'AAL3-strength: FIDO2 security key or FastPass with biometrics on a managed, compliant device; prompt at every sign-in; short session; restricted network zone.',
+    'Central PeopleSoft support and security office.',
+    'Protecting the accounts that can change everyone else’s access.',
+    'A security administrator signs in from the admin network with a security key every time.',
+    'Device assurance, a list of privileged permission lists, privileged-access review every six months.',
+    'Emergency access, monitoring for privileged sign-ins, Application Designer access path.',
+    'In the pilot, before any business users.',
+    'Just-in-time elevation so standing privileged access shrinks.',
+  ] },
+  'pop-remote': { eyebrow: 'Policy · Population', title: 'Off-network & occasional users', s: [
+    'Users signing in from outside trusted network zones or infrequently.',
+    'Okta Verify required (no SMS or voice), ThreatInsight on, deny from blocked zones, shorter session.',
+    'Teleworkers and staff travelling.',
+    'Raising assurance when context is riskier.',
+    'A sign-in from an unexpected country is denied and logged.',
+    'Network zone definitions maintained by the network team.',
+    'SIEM detections for impossible travel and blocked zones.',
+    'From wave 1.',
+    'Device-bound sessions so stolen session cookies are useless.',
+  ] },
+  'pop-service': { eyebrow: 'Policy · Population', title: 'Service & integration accounts', s: [
+    'Non-human accounts used by Integration Broker nodes, Process Scheduler, and interfaces.',
+    'No interactive sign-in. Excluded from Okta MFA, but restricted by network, certificates, and scope, and owned by a named person.',
+    'Integration Broker, batch, reporting.',
+    'Keeping automation running while closing interactive misuse.',
+    'An interface account cannot sign in to PIA in a browser (TC-38).',
+    'An inventory with owners; credential storage in a vault.',
+    'Integration regression tests; account management standard for service accounts.',
+    'Inventoried in assessment; locked down before wave 1.',
+    'Certificate or OAuth client-credential authentication everywhere supported.',
+  ] },
+  'pop-emergency': { eyebrow: 'Policy · Population', title: 'Emergency (break-glass) access', s: [
+    'A small number of vaulted accounts for use when Okta or the gateway is unavailable and finance operations must continue.',
+    'Credentials held in a vault with dual control; use raises an immediate alert; accounts are disabled automatically after 24 hours and reviewed.',
+    'Okta outage, gateway failure, or a failed cutover.',
+    'Business continuity for payment runs and close.',
+    'During a simulated outage an administrator retrieves the emergency credential, signs in, and the SIEM alerts within a minute (TC-35, TC-36).',
+    'Vault, alerting, a documented procedure.',
+    'Rollback decision tree; incident response.',
+    'Tested before each wave; used only under the procedure.',
+    'Replace with a tested secondary path that still applies MFA.',
+  ] },
+
+  /* ---------------- PeopleSoft mapping ---------------- */
+  'ps-oprid': { eyebrow: 'PeopleSoft mapping', title: 'Okta login ↔ OPRID', s: [
+    'The rule that links each Okta user to exactly one PeopleSoft user ID (PSOPRDEFN.OPRID).',
+    'An Okta profile attribute carries the OPRID, or a deterministic transform of the login. The gateway header or SAML subject sends it; sign-on PeopleCode or the SAML framework looks it up.',
+    'Every sign-in.',
+    'Avoiding wrong-user sessions and orphaned PeopleSoft accounts.',
+    'A read-only SQL report lists OPRIDs with no Okta match and Okta users with no OPRID before each wave.',
+    'Directory attribute quality; a decision on case and format.',
+    'Test cases TC-04 and TC-05.',
+    'Settled in design; verified per wave.',
+    'Provision PeopleSoft users from the same source so the mapping never drifts.',
+  ] },
+  'ps-webprofile': { eyebrow: 'PeopleSoft mapping', title: 'Web profile & sessions', s: [
+    'Web profile settings for authentication domain, inactivity warning and timeout, sign-on and logout pages, and cookies.',
+    'Timeout set to match the organizational session-lock rule; logout redirected to Okta; cookies Secure, HttpOnly, and SameSite.',
+    'Every PIA request.',
+    'Consistent session behavior and clean sign-out.',
+    'Warning at 13 minutes, timeout at 15, logout to Okta sign-out.',
+    'Web server restart windows.',
+    'Okta session lifetime; TC-39 to TC-44.',
+    'Build phase.',
+    'Single sign-out across all federated applications.',
+  ] },
+  'ps-signon': { eyebrow: 'PeopleSoft mapping', title: 'Sign-on PeopleCode', s: [
+    'The PeopleCode function registered on the Signon PeopleCode page that decides whether a sign-in succeeds.',
+    'For pattern B it checks the request source, reads the trusted header, verifies the OPRID exists and is unlocked, then sets the authentication result. No password fallback.',
+    'Application server at every sign-in.',
+    'Header trust, refusal of unknown users, audit logging.',
+    'A request with the header but from a non-gateway address is refused and logged (TC-54).',
+    'PeopleTools developer access in non-production; code review.',
+    'Gateway configuration; load-balancer rules.',
+    'Pattern B only.',
+    'Removed after a move to native SAML.',
+  ] },
+  'ps-roles': { eyebrow: 'PeopleSoft mapping', title: 'Roles & permission lists in scope', s: [
+    'The PeopleSoft roles and permission lists that decide which Okta population a user belongs to.',
+    'Users holding privileged permission lists join the administrator group; payment and approval roles join the approver group; everyone else is general.',
+    'Population design and access reviews.',
+    'Applying stronger MFA to the riskiest access.',
+    'Holders of security-administration permission lists are listed by a read-only query and reviewed every six months.',
+    'Role catalog and owners.',
+    'Okta group rules; segregation-of-duties checks.',
+    'Design and every wave.',
+    'Drive Okta groups from PeopleSoft role changes automatically.',
+  ] },
+  'ps-ib': { eyebrow: 'PeopleSoft mapping', title: 'Integration Broker security', s: [
+    'Authentication for messages between PeopleSoft and other systems: node passwords, certificates and two-way SSL, and WS-Security UsernameToken.',
+    'The IB gateway is kept off the user sign-on path and restricted by network; node credentials are vaulted.',
+    'All interfaces.',
+    'Keeping interfaces working when MFA is enforced.',
+    'The external bank node uses certificate authentication and two-way SSL; it never touches Okta.',
+    'Node and certificate inventory.',
+    'Regression tests TC-45 to TC-52.',
+    'Assessment and each wave.',
+    'OAuth for REST service operations.',
+  ] },
+  'ps-bypass': { eyebrow: 'PeopleSoft mapping', title: 'Bypass paths to close', s: [
+    'Ways a person could reach PeopleSoft without passing through Okta.',
+    'Each path is listed, owned, and closed or monitored: direct web-server URLs, alternate ports, Application Designer two-tier access, IB gateway, non-production environments sharing PS_TOKEN trust.',
+    'Assessment, design, and negative testing.',
+    'Making MFA mandatory in fact, not just in policy.',
+    'Production nodes do not trust PS_TOKENs issued by non-production (TC-59).',
+    'Network and middleware access to verify each path.',
+    'SIEM bypass detection; negative tests TC-53 to TC-60.',
+    'Before the pilot and after any infrastructure change.',
+    'Continuous checks that alert when a new path appears.',
+  ] },
+
+  /* ---------------- Roadmap phases ---------------- */
+  'ph-0': { eyebrow: 'Phase 0 · Months 1–3', title: 'Mobilize & assess', s: [
+    'Learning the current PeopleSoft authentication environment and setting the security requirements.',
+    'Working sessions, configuration review, read-only queries, interviews with finance leads.',
+    'Project team, PeopleSoft administrators, security office.',
+    'Finding bypass paths, user populations, dependencies.',
+    'The assessment report lists every sign-on path and the owner of each.',
+    'Access to environments and people.',
+    'Feeds design and the risk register.',
+    'Start of engagement.',
+    'Becomes the operations baseline.',
+  ] },
+  'ph-1': { eyebrow: 'Phase 1 · Months 3–6', title: 'Design', s: [
+    'Choosing the integration pattern and designing Okta policies, PeopleSoft configuration, exceptions, recovery, logging, and monitoring.',
+    'Decision record, design documents, design review with the project team and security office.',
+    'Architecture and security review boards.',
+    'Agreeing the target before build.',
+    'Design sign-off with the pattern scorer as evidence.',
+    'Assessment complete.',
+    'Drives build and the test strategy.',
+    'After assessment.',
+    'Design leaves room for passwordless and step-up later.',
+  ] },
+  'ph-2': { eyebrow: 'Phase 2 · Months 6–10', title: 'Build & configure', s: [
+    'Configuring Okta, the gateway or SAML, PeopleSoft web profile and sign-on, and SIEM feeds in non-production.',
+    'Configuration as code where possible (Terraform for Okta), a configuration workbook for everything else.',
+    'Non-production environments.',
+    'A repeatable, reviewable configuration.',
+    'Okta policies applied from Terraform and compared with the workbook.',
+    'Design sign-off; non-production tenant.',
+    'Feeds testing.',
+    'After design.',
+    'Pipeline-driven promotion between environments.',
+  ] },
+  'ph-3': { eyebrow: 'Phase 3 · Months 9–13', title: 'Test', s: [
+    'Functional, security, negative, and regression testing, then UAT with finance users.',
+    'The 60-case plan, defect triage, retest.',
+    'Test environments.',
+    'Proving readiness.',
+    'Exit with no open critical or high defects.',
+    'Build complete for tested scope.',
+    'Feeds pilot go / no-go.',
+    'Overlaps late build.',
+    'Automated regression.',
+  ] },
+  'ph-4': { eyebrow: 'Phase 4 · Months 13–15', title: 'Pilot', s: [
+    'Enforcing MFA for IT and security staff, then one business unit.',
+    'Enrollment window, enforcement, hypercare, tuning.',
+    'Production, limited scope.',
+    'Learning before scale.',
+    'Pilot metrics set enrollment windows for later waves.',
+    'Test exit.',
+    'Feeds wave planning.',
+    'After testing.',
+    'Pilot data shapes help-desk staffing.',
+  ] },
+  'ph-5': { eyebrow: 'Phase 5 · Months 15–22', title: 'Production waves', s: [
+    'Five enforcement waves by business unit.',
+    'Each wave: communications, enrollment window, go / no-go, enforcement, hypercare, tested rollback.',
+    'Production.',
+    'Controlled rollout.',
+    'Wave dates avoid month-end and fiscal year-end close.',
+    'Pilot success.',
+    'Monitoring and help desk.',
+    'After pilot.',
+    'Shorter windows as adoption grows.',
+  ] },
+  'ph-6': { eyebrow: 'Phase 6 · Months 22–25', title: 'Stabilize', s: [
+    'Resolving issues, tuning policies, setting monitoring thresholds.',
+    'Weekly review of KPIs: enrollment, MFA failures, lockouts, help-desk volume.',
+    'Production.',
+    'Steady state.',
+    'KPIs held for 60 days.',
+    'All waves enforced.',
+    'Feeds transition.',
+    'After the last wave.',
+    'Automated KPI reporting to operations.',
+  ] },
+  'ph-7': { eyebrow: 'Phase 7 · Months 25–30', title: 'Transition & enhance', s: [
+    'Knowledge transfer, operational hand-off, enhancement roadmap.',
+    'Shadow, reverse-shadow, then independent operation; documentation accepted.',
+    'Operations and support teams.',
+    'Self-sufficient staff.',
+    'Operations resolve a factor-reset escalation without the architect.',
+    'Stabilization complete.',
+    'Closes the engagement.',
+    'Final phase.',
+    'Passwordless and phishing-resistant expansion.',
+  ] },
+};
+
+/* ---------------- Pattern scorer ---------------- */
+const CRITERIA = [
+  { id: 'sec', label: 'Security assurance', w: 5 },
+  { id: 'upg', label: 'No PeopleTools upgrade needed', w: 5 },
+  { id: 'eff', label: 'Implementation effort (higher = less)', w: 3 },
+  { id: 'ops', label: 'Operational simplicity', w: 3 },
+  { id: 'ux', label: 'User experience', w: 3 },
+  { id: 'step', label: 'Transaction step-up support', w: 2 },
+  { id: 'byp', label: 'Bypass resistance', w: 4 },
+];
+const PATTERNS = [
+  { id: 'A', name: 'Native SAML 2.0', sub: 'PeopleTools 8.63', s: { sec: 5, upg: 1, eff: 3, ops: 5, ux: 4, step: 5, byp: 4 } },
+  { id: 'B', name: 'Okta Access Gateway', sub: 'Header-based', s: { sec: 4, upg: 5, eff: 3, ops: 3, ux: 4, step: 3, byp: 3 } },
+  { id: 'C', name: 'Web-tier agent', sub: 'OAM WebGate / partner', s: { sec: 4, upg: 4, eff: 2, ops: 2, ux: 3, step: 2, byp: 3 } },
+];
+
+/* ---------------- Current-state checklist ---------------- */
+const CHECKS = [
+  ['Authentication', 'Which PeopleTools release runs in production, and when is the next upgrade?', 'Decides whether native SAML (8.63) is an option.'],
+  ['Authentication', 'Is custom sign-on PeopleCode registered today (LDAP, header, or other)?', 'Existing code must be replaced or extended, not duplicated.'],
+  ['Authentication', 'Is LDAP directory authentication configured, and against which directory?', 'Tells us the current source of truth for passwords.'],
+  ['Authentication', 'What do the web profiles set for timeout, sign-on page, and logout?', 'Session alignment with Okta and the session-lock standard.'],
+  ['Authentication', 'Which password controls apply to PeopleSoft accounts today?', 'Determines what remains after MFA and what can be retired.'],
+  ['Topology', 'How many web and application server domains run per environment?', 'Every domain needs the same configuration and tests.'],
+  ['Topology', 'What sits in front of the web tier: load balancer, WAF, reverse proxy?', 'Where a gateway or network restriction can be placed.'],
+  ['Topology', 'Which environments share PS_TOKEN trust (node passwords or certificates)?', 'Cross-environment tokens are a bypass path.'],
+  ['Users', 'How many active OPRIDs, and how many map cleanly to directory users?', 'Sizes waves and finds orphaned accounts.'],
+  ['Users', 'Which roles and permission lists are privileged?', 'Defines the administrator population.'],
+  ['Users', 'Which users approve or release payments?', 'Defines the approver population and step-up scope.'],
+  ['Users', 'Are there shared, generic, or training accounts?', 'Shared accounts cannot carry MFA and must be removed or replaced.'],
+  ['Users', 'How many users lack a smartphone or managed device?', 'Sizes the FIDO2 key supply.'],
+  ['Integrations', 'List of Integration Broker nodes and their authentication options.', 'Interfaces must keep working on enforcement day.'],
+  ['Integrations', 'Scheduled jobs: Process Scheduler, nVision, Query, bank files.', 'Batch must not depend on interactive sign-in.'],
+  ['Integrations', 'External applications that deep-link into PeopleSoft.', 'Deep links must survive the redirect to Okta.'],
+  ['Integrations', 'Developer access: Application Designer two-tier connections.', 'A path around the web tier that needs network control.'],
+  ['Security', 'Where do PeopleSoft and web logs go today, and for how long?', 'Logging standard compliance and bypass detection.'],
+  ['Security', 'Is there an emergency-access procedure for PeopleSoft?', 'Needed before any enforcement.'],
+  ['Security', 'Which security standards and exception processes apply?', 'Policy alignment and the exception workflow.'],
+  ['Governance', 'Change-freeze calendar: month-end, fiscal year-end, payroll dates.', 'Wave dates must avoid them.'],
+  ['Governance', 'Service desk capacity and current identity-verification method.', 'Enrollment and recovery depend on it.'],
+  ['Governance', 'Okta tenant status: existing apps, policies, licenses, admins.', 'The PeopleSoft app must fit existing policy design.'],
+  ['Governance', 'Who owns the decision at each gate?', 'Keeps go / no-go decisions quick.'],
+];
+
+/* ---------------- Policy rules (ordered) ---------------- */
+const RULES = [
+  ['1', 'Emergency accounts', 'Group: PS-Emergency', 'Allow with password + vaulted second factor; alert on use; auto-disable after 24 h', 'crit'],
+  ['2', 'Security & PeopleTools admins', 'Group: PS-Privileged · Zone: Admin network · Device: managed & compliant', 'FIDO2 / WebAuthn or FastPass with biometrics, every sign-in, session 4 h', 'warn'],
+  ['3', 'Approvers & payment release', 'Group: PS-Approvers', 'Phishing-resistant preferred (FastPass / FIDO2); Okta Verify push with number challenge allowed; step-up on release', 'warn'],
+  ['4', 'Off-network users', 'Zone: not in Trusted networks', 'Okta Verify only (no SMS / voice); ThreatInsight block; session 8 h', 'ok'],
+  ['5', 'General finance users', 'Group: PS-Users', 'Okta Verify push with number challenge or FastPass; session 12 h', 'ok'],
+  ['6', 'Service accounts', 'Group: PS-Service', 'Deny interactive sign-in', 'crit'],
+  ['7', 'Catch-all', 'Everyone else', 'Deny', 'crit'],
+];
+const AUTHENTICATORS = [
+  ['Okta Verify (push + number challenge)', 'Primary for general users', 'ok'],
+  ['Okta FastPass', 'Preferred on managed devices; biometrics for admins', 'ok'],
+  ['FIDO2 / WebAuthn security key', 'Required option for admins; issued to users without phones', 'ok'],
+  ['Okta Verify TOTP', 'Fallback when push is unavailable', 'ok'],
+  ['Phone (SMS / voice)', 'Recovery only, never a primary factor', 'warn'],
+  ['Email', 'Recovery only', 'warn'],
+  ['Security question', 'Disabled', 'crit'],
+];
+
+/* ---------------- Roles in scope ---------------- */
+const ROLES = [
+  ['PeopleSoft Administrator / PeopleTools', 'Privileged', 'FIDO2 or FastPass + biometrics, every sign-in'],
+  ['Security Administrator', 'Privileged', 'FIDO2 or FastPass + biometrics, every sign-in'],
+  ['AP Payment Release / Treasury', 'High', 'Phishing-resistant preferred; step-up on release'],
+  ['Supplier Maintenance (bank details)', 'High', 'Step-up on bank-account change'],
+  ['GL Journal Approver', 'High', 'Phishing-resistant preferred'],
+  ['Voucher / Requisition Entry', 'Standard', 'Okta Verify push or FastPass'],
+  ['Inquiry & Reporting', 'Standard', 'Okta Verify push or FastPass'],
+  ['Integration / batch user IDs', 'Service', 'No interactive sign-in'],
+];
+
+/* ---------------- Test plan (60) ---------------- */
+const TESTS = [
+  ['TC-01','Sign-on','SP-initiated sign-on from the PeopleSoft URL redirects to Okta and returns to the PeopleSoft home page','User lands on home page with correct OPRID','High','All'],
+  ['TC-02','Sign-on','IdP-initiated sign-on from the Okta dashboard tile','User lands on PeopleSoft home page','High','All'],
+  ['TC-03','Sign-on','Deep link to a component (voucher entry) before sign-in','Target component opens after Okta sign-in','High','All'],
+  ['TC-04','Sign-on','Okta login maps to the correct OPRID','PeopleSoft session shows the matching user','High','All'],
+  ['TC-05','Sign-on','Okta user with no matching OPRID','Clear error; no PeopleSoft session created','High','All'],
+  ['TC-06','Sign-on','PeopleSoft account locked (ACCTLOCK = 1) after Okta success','Sign-in refused and logged','High','All'],
+  ['TC-07','Sign-on','Fluid and Classic pages after sign-on','Both render without re-authentication','Medium','All'],
+  ['TC-08','Sign-on','Sign-on through each load-balanced web server','Succeeds on every node','Medium','All'],
+  ['TC-09','Sign-on','Supported browsers (Edge, Chrome, Firefox, Safari)','Sign-on succeeds in each','Medium','All'],
+  ['TC-10','Sign-on','Concurrent sessions in two browsers','Behaves per session policy','Low','All'],
+  ['TC-11','Enrollment','First sign-in before enrollment','Enrollment forced; PeopleSoft not reachable until complete','High','All'],
+  ['TC-12','Enrollment','Okta Verify push with number challenge','Challenge shown; correct number approves','High','All'],
+  ['TC-13','Enrollment','Okta FastPass on a managed Windows device','Enrolls and signs in silently','Medium','All'],
+  ['TC-14','Enrollment','FIDO2 key enrollment for a privileged user','Key registered; required by admin rule','High','All'],
+  ['TC-15','Enrollment','User without a smartphone receives a FIDO2 key','Enrolls key with service desk help','Medium','All'],
+  ['TC-16','Enrollment','SMS / voice offered as primary factor','Not offered','Medium','All'],
+  ['TC-17','Enrollment','Enrollment window ends for the wave','Enforcement begins on schedule','High','All'],
+  ['TC-18','Enrollment','Enrollment instructions and help text','Correct agency-specific guidance shown','Low','All'],
+  ['TC-19','Access','General finance user after cutover','Same components and pages as before cutover','High','All'],
+  ['TC-20','Access','AP payment approver signs in','Prompted for phishing-resistant factor per policy','High','All'],
+  ['TC-21','Access','Security administrator signs in','FIDO2 or FastPass with biometrics required every time','High','All'],
+  ['TC-22','Access','Application Designer two-tier connection','Allowed only from approved admin network','High','All'],
+  ['TC-23','Access','Row-level security (business unit / SetID)','Results unchanged pre and post cutover','High','All'],
+  ['TC-24','Access','Query security trees','Same query results pre and post cutover','Medium','All'],
+  ['TC-25','Access','Self-service user signs in','Follows general user policy','Medium','All'],
+  ['TC-26','Access','Terminated user with valid PeopleSoft password','Deactivated in Okta; cannot reach PeopleSoft','High','All'],
+  ['TC-27','Recovery','Lost phone: service desk factor reset','Identity verified; reset; user re-enrolls','High','All'],
+  ['TC-28','Recovery','Self-service recovery','Only approved recovery factors offered','High','All'],
+  ['TC-29','Recovery','Temporary access code','Expires after configured window','Medium','All'],
+  ['TC-30','Recovery','Recovery with failed identity verification','Refused and logged','High','All'],
+  ['TC-31','Recovery','Factor reset event','Visible in SIEM within 5 minutes','Medium','All'],
+  ['TC-32','Recovery','PeopleSoft password reset (if passwords remain)','Does not bypass MFA','High','All'],
+  ['TC-33','Exceptions','Approved time-boxed exception','Applies to named user only; expires automatically','High','All'],
+  ['TC-34','Exceptions','Exception without approval record','Cannot be added to exception group','Medium','All'],
+  ['TC-35','Exceptions','Emergency account during simulated Okta outage','Signs in under procedure','High','All'],
+  ['TC-36','Exceptions','Emergency account use','SIEM alert raised immediately','High','All'],
+  ['TC-37','Exceptions','Emergency account after 24 hours','Disabled automatically','High','All'],
+  ['TC-38','Exceptions','Service account interactive sign-in','Denied','High','All'],
+  ['TC-39','Session','PeopleSoft inactivity warning and timeout','Fire per web profile','High','All'],
+  ['TC-40','Session','Expired Okta session, next PeopleSoft navigation','Re-authentication required','Medium','All'],
+  ['TC-41','Session','PeopleSoft sign-out','Session ends; redirect to Okta sign-out','High','All'],
+  ['TC-42','Session','Okta sign-out','PeopleSoft gateway / SAML session invalidated','Medium','All'],
+  ['TC-43','Session','Long journal entry near timeout','Warning shown; extending keeps the data','Medium','All'],
+  ['TC-44','Session','Session cookies','Secure, HttpOnly, and SameSite set','High','All'],
+  ['TC-45','Integration','Integration Broker inbound from external nodes','Messages process normally','High','All'],
+  ['TC-46','Integration','Integration Broker outbound','Unaffected','High','All'],
+  ['TC-47','Integration','Process Scheduler jobs','Run under scheduled user IDs with no interactive MFA','High','All'],
+  ['TC-48','Integration','Scheduled nVision and Query','Complete on schedule','Medium','All'],
+  ['TC-49','Integration','Bank and payment interfaces (month-end simulation)','Run on schedule','High','All'],
+  ['TC-50','Integration','Workflow approval email deep link','Routes through Okta to the worklist','Medium','All'],
+  ['TC-51','Integration','REST / web-service consumers','Authenticate with node credentials, not Okta','High','All'],
+  ['TC-52','Integration','Directory and provisioning sync','Continues to update user profiles','Medium','All'],
+  ['TC-53','Negative','Direct PIA URL bypassing the gateway','Blocked','High','B / C'],
+  ['TC-54','Negative','Forged identity header from a non-gateway source','Ignored by sign-on PeopleCode; logged','High','B / C'],
+  ['TC-55','Negative','Replayed SAML assertion','Rejected','High','A'],
+  ['TC-56','Negative','Repeated push denials (MFA fatigue)','Lockout and SIEM alert','High','All'],
+  ['TC-57','Negative','Sign-in from a blocked network zone','Denied','Medium','All'],
+  ['TC-58','Negative','Non-compliant device on privileged rule','Fails device assurance','Medium','All'],
+  ['TC-59','Negative','PS_TOKEN from non-production presented to production','Not accepted','High','All'],
+  ['TC-60','Negative','Okta admin console policy change','Logged and alerted','Medium','All'],
+];
+
+/* ---------------- Waves (illustrative planning counts) ---------------- */
+const WAVES = [
+  ['Pilot', 'IT, security & PeopleSoft support', 250, 'M13–M15'],
+  ['Wave 1', 'Central finance & accounting', 1800, 'M15–M16'],
+  ['Wave 2', 'Agency group A (largest)', 3200, 'M16–M18'],
+  ['Wave 3', 'Agency group B', 3900, 'M18–M19'],
+  ['Wave 4', 'Agency group C', 4100, 'M19–M21'],
+  ['Wave 5', 'Remaining users · approver step-up', 2750, 'M21–M22'],
+];
+
+/* ---------------- Runbook ---------------- */
+const RUNBOOK = [
+  ['T-14 days', 'Communications to wave users; enrollment opens (MFA optional for the wave group).', 'Comms sent; help-desk scripts published'],
+  ['T-7 days', 'Regression subset run; rollback rehearsed in non-production; enrollment rate reviewed.', 'Enrollment ≥ 85% · no open critical / high defects'],
+  ['T-1 day', 'Go / no-go board: test results, enrollment, help-desk staffing, change calendar.', 'Board approves'],
+  ['T-0 (06:00)', 'Move wave group to the enforced Okta rule; verify sign-on, deep links, and interfaces.', 'Smoke tests pass within 30 minutes'],
+  ['T-0 (09:00–17:00)', 'Hypercare bridge; monitor sign-in success, MFA failures, lockouts, help-desk queue.', 'Sign-in success ≥ 97% rolling 30 min'],
+  ['T+1 to T+5', 'Daily review; tune policies; close issues; report to sponsor.', 'Stabilization metrics within thresholds'],
+];
+
+/* ---------------- Logging & detections ---------------- */
+const EVENTS = [
+  ['user.session.start', 'Okta session started', 'Baseline of sign-ins by population'],
+  ['user.authentication.sso', 'SSO to the PeopleSoft app', 'Join with PSACCESSLOG to detect bypass'],
+  ['user.authentication.auth_via_mfa', 'MFA challenge result', 'MFA failure rate KPI; fatigue detection'],
+  ['policy.evaluate_sign_on', 'Policy decision and rule matched', 'Confirms users hit the intended rule'],
+  ['user.mfa.factor.activate', 'Authenticator enrolled', 'Enrollment progress per wave'],
+  ['user.mfa.factor.deactivate', 'Authenticator removed or reset', 'Reset followed by privileged action'],
+  ['user.account.lock', 'Account locked', 'Lockout KPI; attack indicator'],
+  ['PSACCESSLOG', 'PeopleSoft sign-on / sign-off record', 'Bypass detection; session audit'],
+];
+const DETECTIONS = [
+  ['PeopleSoft sign-in without Okta SSO', 'PSACCESSLOG sign-in with no user.authentication.sso for that user in the prior 2 minutes', 'crit'],
+  ['MFA fatigue', '≥ 5 push denials for one user in 10 minutes', 'crit'],
+  ['Emergency account used', 'Any sign-in by a PS-Emergency member', 'crit'],
+  ['Factor reset then privileged sign-in', 'user.mfa.factor.deactivate followed by an admin-rule sign-in within 1 hour', 'warn'],
+  ['Lockout spike', 'user.account.lock count above 3× the 7-day baseline', 'warn'],
+  ['Blocked-zone attempts', 'Denied sign-ins from blocked network zones', 'ok'],
+];
+
+/* ---------------- Standards crosswalk ---------------- */
+const STANDARDS = [
+  ['MFA for all interactive users', 'NIST SP 800-63B AAL2 · NIST 800-53 IA-2(1)(2)', 'Okta rules 3–5'],
+  ['Phishing-resistant MFA for administrators', 'NIST SP 800-63B AAL3 · IA-2(8)', 'Okta rule 2 (FIDO2 / FastPass + biometrics)'],
+  ['Assurance assessed per system', 'NYS-P20-001 Digital Identity (IAL / AAL / FAL)', 'Assurance worksheet in design'],
+  ['Authenticator requirements', 'NYS-S14-006 Authentication Tokens · IA-5', 'Authenticator enrollment policy'],
+  ['15-minute session lock; 18-hour session limit', 'NYS-S14-013 · AC-11, AC-12', 'Web profile timeout; Okta session lifetimes'],
+  ['Privileged access review every 6 months', 'NYS-S14-013 · AC-2(7)', 'Quarterly role query; semi-annual review'],
+  ['Emergency accounts disabled after 24 hours', 'NYS-S14-013 · AC-2(2)', 'Emergency account automation'],
+  ['Authentication success and failure logged, centralized, kept 1 year', 'NYS-S14-005 Security Logging · AU-2, AU-6, AU-11, AU-12', 'Okta log streaming + PeopleSoft logs to SIEM'],
+  ['Account lockout after failed attempts', 'NIST 800-53 AC-7', 'Okta lockout policy; fatigue detection'],
+];
+
+/* ---------------- RAID ---------------- */
+const RISKS = [
+  ['R-01', 'PeopleTools release not at 8.63 within the engagement', 'High', 'Gateway pattern B now; keep policies portable for a later SAML switch', 'warn'],
+  ['R-02', 'Unknown bypass paths to PeopleSoft', 'High', 'Assessment inventory; negative tests; SIEM bypass detection', 'crit'],
+  ['R-03', 'Service desk overwhelmed at enforcement', 'Medium', 'Wave sizing from pilot data; enrollment windows; FIDO2 key stock', 'warn'],
+  ['R-04', 'Shared or generic accounts in use', 'Medium', 'Find in assessment; replace with named accounts before wave', 'warn'],
+  ['R-05', 'Okta or gateway outage halts finance work', 'High', 'Emergency access; tested rollback; status monitoring', 'crit'],
+  ['R-06', 'OPRID mismatches cause wrong-user or failed sign-ins', 'Medium', 'Mapping report before each wave; fix at source', 'warn'],
+  ['R-07', 'Integration accounts routed through Okta by mistake', 'High', 'Interface inventory; IB regression tests', 'crit'],
+  ['R-08', 'MFA fatigue attacks on approvers', 'Medium', 'Number challenge; phishing-resistant for approvers; detection', 'ok'],
+  ['R-09', 'Timeout mismatch loses long journal entries', 'Low', 'Warning before timeout; aligned sessions; TC-43', 'ok'],
+  ['R-10', 'Enforcement collides with month-end or fiscal year-end close', 'Medium', 'Change calendar; no waves in close windows', 'ok'],
+];
+const DEPENDENCIES = [
+  ['Directory team', 'OPRID attribute populated and accurate for all users'],
+  ['Network team', 'Load-balancer and firewall rules; gateway hosting (pattern B)'],
+  ['Okta tenant admins', 'Non-production tenant, groups, policy changes, log streaming'],
+  ['PeopleSoft administrators', 'Web profile, sign-on PeopleCode, environment refreshes'],
+  ['Security operations', 'SIEM onboarding and detection rules'],
+  ['Service desk', 'Scripts, staffing, identity-verification procedure'],
+  ['Change control', 'Wave windows and freeze calendar'],
+];
+
+/* ---------------- Knowledge transfer ---------------- */
+const DELIVERABLES = [
+  ['Architecture document', 'Patterns, flows, components, trust boundaries'],
+  ['Configuration workbook', 'Every Okta, gateway / SAML, and PeopleSoft setting with its reason'],
+  ['Integration dependency register', 'Nodes, jobs, interfaces, owners'],
+  ['Administration guide', 'Day-to-day tasks: groups, exceptions, emergency access, reviews'],
+  ['Troubleshooting guide', 'Symptom → log source → cause → fix'],
+  ['Support procedures', 'Service desk scripts, recovery, escalation'],
+  ['Operational runbooks', 'Certificate rotation, policy change, outage response'],
+  ['Enhancement roadmap', 'Passwordless, phishing-resistant expansion, step-up, governance'],
+];
+
+/* ---------------- JD coverage ---------------- */
+const COVERAGE = [
+  ['Responsibility 1', 'Assess PeopleSoft authentication; identify requirements and dependencies', 'assess', 'PeopleSoft implementations (6 higher-ed, 8 agencies, state agencies); TXDPS assessments'],
+  ['Responsibility 1', 'Recommendations for the Okta MFA design and approach', 'decision', 'Pattern scorer; Ford FSA go / no-go reviews'],
+  ['Responsibility 2', 'Configure Okta authentication, MFA policies, enrollment, integrations', 'policy', 'Okta SSO / MFA / Workflows programs'],
+  ['Responsibility 2', 'Coordinate PeopleSoft, web / app server, directory, authentication components', 'psmap', 'PeopleSoft sign-on and directory integration; F5 APM SSO (TXDPS)'],
+  ['Responsibility 3', 'Test plans: authentication, enrollment, access, recovery, exceptions, integration', 'tests', '60-case plan; TXDPS promotion gates'],
+  ['Responsibility 3', 'Troubleshoot and validate before production', 'tests', 'Defect triage; negative tests'],
+  ['Responsibility 4', 'Plan deployment, cutover, rollback, contingency', 'cutover', 'Ford zero-downtime strategy with rollback triggers'],
+  ['Responsibility 4', 'Support deployment and stabilization', 'cutover', 'Hypercare model; PeopleSoft go-lives'],
+  ['Responsibility 5', 'Configure policies to organizational and access-control standards', 'access', 'Standards crosswalk; TXDPS CJIS / NIST 800-53'],
+  ['Responsibility 5', 'Exceptions, recovery, privileged access, logging, monitoring', 'access', 'PIM (TXDPS); ABR PAM (GEA)'],
+  ['Responsibility 6', 'Troubleshoot Okta, MFA, PeopleSoft, identity issues from logs', 'monitor', 'SOC detection engineering (GEA, UCS)'],
+  ['Responsibility 6', 'Root cause and corrective action with internal teams', 'monitor', 'Integration sync-failure resolution (Amazon)'],
+  ['Responsibility 7', 'Technical and operational documentation', 'kt', '455 architecture documents (TXDPS)'],
+  ['Responsibility 7', 'Knowledge transfer to staff', 'kt', 'Client admin hand-off on PeopleSoft programs'],
+  ['Responsibility 8', 'Planning, design reviews, status, testing, readiness', 'raid', '17 workstreams / 570+ actions (GEA)'],
+  ['Responsibility 8', 'Input on decisions, risks, issues, dependencies, resources', 'raid', 'RAID log; ARB chair'],
+  ['Responsibility 9', 'Monitor and support after production; resolve stabilization issues', 'roadmap', 'Stabilization KPIs'],
+  ['Responsibility 9', 'Transition to operations; recommendations for enhancements', 'kt', 'Enhancement roadmap; AIMXDR hand-offs'],
+  ['Minimum 1', '5 yrs designing security for complex, integrated PeopleSoft systems', 'candidate', 'Worked at PeopleSoft; Financials, HR, Student for higher-ed, government, manufacturing'],
+  ['Minimum 2', '5+ yrs securing cloud environments', 'candidate', 'AWS 20+ yrs, Azure 18+ yrs, GCP, OCI'],
+  ['Minimum 3', '5+ yrs configuring and managing cloud security software', 'candidate', 'Okta, Entra ID, Defender, Sentinel, XSIAM, Qualys'],
+  ['Minimum 4', '4+ yrs collaborative solutions between functional and technical teams', 'raid', 'Finance / HR / registrar with DBA, web, integration teams'],
+  ['Minimum 5', '4+ yrs monitoring solutions for compliance', 'monitor', 'Sentinel SOC in a Box; AIMXDR (25+ orgs)'],
+  ['Minimum 6', '4+ yrs evaluating design specs against security standards', 'decision', 'ARB / TRB gates; FSA reviews'],
+  ['Minimum 7', '4+ yrs security documentation', 'kt', 'Policies, standards, runbooks, CP / CPS'],
+  ['Minimum 8', '4+ yrs evaluating effectiveness of security measures', 'assess', '325+ FedRAMP control assessments'],
+  ['Minimum 9', '3+ yrs business → security requirements', 'assess', 'SABSA Master; CPA-informed finance controls'],
+  ['Preferred 1', 'Okta IAM: MFA, Adaptive MFA, SSO', 'policy', 'Okta SSO / MFA / LCM / Workflows; Okta Certified Professional'],
+  ['Preferred 2', 'PeopleSoft with SAML, OAuth, OIDC, LDAP', 'architecture', 'PeopleSoft LDAP / sign-on; SAML / OIDC for 12,000+ identities'],
+  ['Preferred 3', 'MFA in PeopleSoft 9.2 or large ERP', 'architecture', 'PeopleSoft programs; Jack Henry PeopleSoft 9.2 → Fusion'],
+  ['Preferred 4', 'Zero Trust and modern authentication', 'architecture', '60+ Zero Trust implementations'],
+  ['Preferred 5', 'Conditional, adaptive, risk-based authentication', 'policy', 'Entra Conditional Access & Identity Protection (TXDPS)'],
+  ['Preferred 6', 'PeopleTools security, permission lists, roles, provisioning, IB security', 'psmap', 'PeopleSoft security design across implementations'],
+  ['Preferred 7', 'CISSP; Okta certification', 'candidate', 'CISSP · Okta Certified Professional'],
+];
+
+/* ---------------- Simulated pilot telemetry (illustration only) ---------------- */
+const TELEMETRY_DAYS = ['D1','D2','D3','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14'];
+const TELEMETRY = {
+  success: [182, 196, 204, 211, 208, 92, 88, 215, 221, 226, 230, 224, 101, 96],
+  failed:  [21, 17, 14, 11, 10, 4, 3, 9, 8, 7, 6, 7, 2, 2],
+  locks:   [4, 3, 2, 2, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0],
+};
+
+/* ============================================================
+   Okta MFA · PeopleSoft Financials — Command Center v1 · app logic
+   Kenneth P. Barnes · UCS Solutions · est. 1993
+   ============================================================ */
+(function () {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- safe storage ---------- */
+  const KEY = 'ucs-okta-ps-cc-v1';
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ } }
+  const state = Object.assign({ tests: {}, checks: {}, weights: null, release: 'old', pattern: 'B', filter: 'All', tree: { q1: 'no', q2: 'no', q3: 'no' } }, load());
+  if (!state.weights) { state.weights = {}; CRITERIA.forEach((c) => { state.weights[c.id] = c.w; }); }
+
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  /* ---------- theme ---------- */
+  function currentTheme() {
+    const a = document.documentElement.getAttribute('data-theme');
+    if (a) return a;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  $('#themeBtn').addEventListener('click', () => {
+    const next = currentTheme() === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('ucs-theme', next); } catch (e) { /* ignore */ }
+    repaintCharts();
+  });
+
+  /* ---------- nav ---------- */
+  const NAV = [
+    ['Overview', [['overview', 'Engagement & KPIs'], ['coverage', 'JD coverage map'], ['candidate', 'Candidate']]],
+    ['Design', [['architecture', 'Sign-on architecture'], ['decision', 'Pattern decision'], ['assess', 'Current state']]],
+    ['Configuration', [['policy', 'Okta policy'], ['psmap', 'PeopleSoft mapping'], ['access', 'Access & standards']]],
+    ['Delivery', [['tests', 'Test plan', '60'], ['cutover', 'Waves & rollback'], ['monitor', 'Logging & monitoring']]],
+    ['Program', [['roadmap', '30-month roadmap'], ['raid', 'Risks & dependencies'], ['kt', 'Knowledge transfer']]],
+  ];
+  $('#nav').innerHTML = NAV.map(([g, links]) => `
+    <div class="nav-group"><button class="nav-head" type="button" aria-expanded="true">${g}<span class="chev">▾</span></button>
+      <ul class="nav-links">${links.map(([id, l, t]) => `<li><a href="#${id}" data-id="${id}">${l}${t ? `<span class="tag">${t}</span>` : ''}</a></li>`).join('')}</ul></div>`).join('');
+  $$('.nav-head').forEach((b) => b.addEventListener('click', () => {
+    const g = b.closest('.nav-group'); g.classList.toggle('collapsed');
+    b.setAttribute('aria-expanded', String(!g.classList.contains('collapsed')));
+  }));
+  const menuBtn = $('#menuBtn');
+  menuBtn.addEventListener('click', () => {
+    const open = !document.body.classList.contains('nav-open');
+    document.body.classList.toggle('nav-open', open); menuBtn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute('href').slice(1);
+    const t = id && document.getElementById(id);
+    if (!t) return;
+    e.preventDefault();
+    t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    document.body.classList.remove('nav-open'); menuBtn.setAttribute('aria-expanded', 'false');
+  });
+  if ('IntersectionObserver' in window) {
+    const links = $$('.nav-links a');
+    const obs = new IntersectionObserver((ents) => ents.forEach((en) => {
+      if (en.isIntersecting) links.forEach((a) => a.classList.toggle('active', a.dataset.id === en.target.id));
+    }), { rootMargin: '-30% 0px -60% 0px' });
+    $$('main section[id]').forEach((s) => obs.observe(s));
+  }
+
+  /* ---------- modal (9-section template) ---------- */
+  const modal = $('#modal-root');
+  let lastFocus = null;
+  function openModal(key, trigger) {
+    const d = DRILL[key]; if (!d) return;
+    lastFocus = trigger || document.activeElement;
+    $('#modal-eyebrow').textContent = d.eyebrow; $('#modal-title').textContent = d.title;
+    $('#modal-toc').innerHTML = NINE.map((h, i) => `<a href="#m-${i}" data-m="${i}">${h}</a>`).join('');
+    $('#modal-body').innerHTML = NINE.map((h, i) => `<div class="m-sec" id="m-${i}"><h4>${h}</h4><p>${esc(d.s[i] || 'Not applicable for this layer.')}</p></div>`).join('');
+    modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
+    $('#modal-body').scrollTop = 0;
+    $('.modal-close', modal).focus();
+  }
+  function closeModal() {
+    modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  modal.addEventListener('click', (e) => {
+    if (e.target.closest('[data-close]')) { closeModal(); return; }
+    const m = e.target.closest('[data-m]');
+    if (m) { e.preventDefault(); e.stopPropagation(); const t = document.getElementById('m-' + m.dataset.m); if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+  }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-drill]') && e.target.tagName !== 'BUTTON') { e.preventDefault(); openModal(e.target.dataset.drill, e.target); }
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.status-btn') || e.target.closest('input')) return;
+    const el = e.target.closest('[data-drill]');
+    if (el && !modal.contains(el)) openModal(el.dataset.drill, el);
+  });
+  const drillAttrs = (k) => `data-drill="${k}" tabindex="0" role="button" aria-label="Open detail"`;
+
+  /* ---------- sparkline ---------- */
+  function spark(vals, color) {
+    const w = 120, h = 30, max = Math.max(...vals), min = Math.min(...vals), r = max - min || 1;
+    const pts = vals.map((v, i) => [i * (w / (vals.length - 1)), h - 3 - ((v - min) / r) * (h - 6)]);
+    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    const last = pts[pts.length - 1];
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h} Z" fill="${color}" opacity=".12"/><path d="${d}" fill="none" stroke="${color}" stroke-width="1.6"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6" fill="${color}"/></svg>`;
+  }
+  function countUp(el, to, suffix = '') {
+    if (reduce) { el.textContent = to + suffix; return; }
+    const t0 = performance.now(), dur = 900;
+    (function step(t) { const p = Math.min(1, (t - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))) + suffix; if (p < 1) requestAnimationFrame(step); })(t0);
+  }
+
+  /* ---------- scoring ---------- */
+  function scores() {
+    return PATTERNS.map((p) => {
+      let total = 0;
+      CRITERIA.forEach((c) => { let s = p.s[c.id]; if (p.id === 'A' && c.id === 'upg' && state.release === 'new') s = 5; total += s * state.weights[c.id]; });
+      return { id: p.id, name: p.name, sub: p.sub, total };
+    });
+  }
+  const leader = () => scores().reduce((a, b) => (b.total > a.total ? b : a));
+
+  /* ---------- KPIs ---------- */
+  function kpiData() {
+    const passed = Object.values(state.tests).filter((v) => v === 'pass').length;
+    const checks = Object.values(state.checks).filter(Boolean).length;
+    const L = leader();
+    return [
+      ['kpi-tests', 'Tests passed', passed, ' / 60', 'Live from the test plan', { prog: passed / 60 }],
+      ['kpi-readiness', 'Current-state checks', checks, ' / ' + CHECKS.length, 'Live from the assessment', { prog: checks / CHECKS.length }],
+      ['kpi-pattern', 'Leading pattern', null, '', `${L.id} · ${L.name} — ${L.total} pts`, null],
+      ['kpi-waves', 'Enforcement waves', 6, '', 'Pilot + 5 waves · M13–M22', WAVES.map((w) => w[2])],
+      ['kpi-coverage', 'JD items mapped', COVERAGE.length, ' / ' + COVERAGE.length, 'Responsibilities + qualifications', { prog: 1 }],
+      ['kpi-months', 'Engagement', 30, ' mo', 'Eight phases · M1–M30', [3, 3, 4, 4, 2, 7, 3, 5]],
+    ];
+  }
+  function renderKpis(animate) {
+    const c = css('--accent');
+    $('#kpis').innerHTML = kpiData().map(([k, l, v, suf, sub, sp]) => `
+      <div class="glass kpi clickable" ${drillAttrs(k)}>
+        <span class="k-label">${l}</span>
+        <span class="k-value" data-to="${v === null ? '' : v}" data-suf="${esc(suf)}">${v === null ? esc(leader().id) : v + suf}</span>
+        <span class="k-sub">${esc(sub)}</span>
+        ${sp && sp.prog !== undefined ? `<div class="progress" style="margin-top:10px"><span style="width:${(sp.prog * 100).toFixed(1)}%"></span></div>` : sp ? spark(sp, c) : `<span class="pill info" style="align-self:flex-start;margin-top:6px;white-space:normal">PeopleTools ${state.release === 'new' ? '8.63+' : '8.60–8.62'}</span>`}
+      </div>`).join('');
+    if (animate) $$('#kpis .k-value').forEach((el) => { if (el.dataset.to !== '') countUp(el, +el.dataset.to, el.dataset.suf); });
+  }
+
+  /* ---------- architecture ---------- */
+  const PAT_INFO = {
+    A: { gw: ['SAML 2.0 provider', 'PeopleTools 8.63'], okta: 'SAML assertion', note: 'Pattern A: Okta posts a signed SAML 2.0 assertion; PeopleTools 8.63 validates it and maps the subject to an OPRID. No gateway hop. Rollback: disable SAML in the web profile and return to the previous sign-on page.' },
+    B: { gw: ['Okta Access Gateway', 'header → PeopleCode'], okta: 'session + MFA', note: 'Pattern B: Okta Access Gateway authenticates with Okta, then forwards requests with the user ID in a header that sign-on PeopleCode trusts only from the gateway. Rollback: switch the load-balancer pool back to the pre-MFA path.' },
+    C: { gw: ['Web-tier agent', 'OAM WebGate ⇄ Okta'], okta: 'federation', note: 'Pattern C: an existing access manager federates to Okta and enforces it at the web tier. Fits only where that component already runs. Rollback: revert the agent policy to the previous authentication scheme.' },
+  };
+  function node(id, x, y, w, h, t1, t2, hl) {
+    return `<g class="node${hl ? ' hl' : ''}" ${drillAttrs(id)} transform="translate(${x},${y})"><rect width="${w}" height="${h}" rx="10"/><text x="12" y="${h / 2 - 3}">${esc(t1)}</text><text class="sub" x="12" y="${h / 2 + 13}">${esc(t2)}</text></g>`;
+  }
+  function edge(d, cls, lx, ly, label) {
+    return `<path class="edge ${cls || ''}" d="${d}" marker-end="url(#arr${cls === 'crit' ? 'C' : cls === 'dim' ? 'D' : ''})"/>` + (label ? `<text class="elabel" x="${lx}" y="${ly}">${esc(label)}</text>` : '');
+  }
+  function drawArch() {
+    const p = PAT_INFO[state.pattern];
+    const svg = $('#arch');
+    svg.innerHTML = `
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${css('--accent')}"/></marker>
+        <marker id="arrD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${css('--muted')}"/></marker>
+        <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${css('--crit')}"/></marker>
+      </defs>
+      <rect class="zone" x="150" y="170" width="840" height="104" rx="12"/>
+      <text class="zlabel" x="740" y="164">PEOPLESOFT REQUEST PATH</text>
+      <rect class="zone" x="10" y="14" width="620" height="92" rx="12"/>
+      <text class="zlabel" x="20" y="10">IDENTITY</text>
+      ${edge('M170 60 L228 60', '', 176, 52, 'import')}
+      ${edge('M470 60 L412 60', 'dim', 418, 52, 'reset')}
+      ${edge('M120 190 C 140 140, 190 110, 240 94', '', 18, 150, 'authenticate + MFA')}
+      ${edge('M300 92 L 252 188', '', 282, 146, p.okta)}
+      ${edge('M140 222 L 158 222', '', 0, 0, '')}
+      ${edge('M330 222 L 348 222', '', 0, 0, '')}
+      ${edge('M475 222 L 498 222', '', 0, 0, '')}
+      ${edge('M650 222 L 668 222', '', 0, 0, '')}
+      ${edge('M810 222 L 828 222', '', 0, 0, '')}
+      ${edge('M80 254 C 90 345, 560 345, 575 256', 'crit', 120, 338, 'direct to PIA — blocked')}
+      ${edge('M372 92 L 340 160 L 340 300 L 398 358', 'dim', 348, 296, 'System Log')}
+      ${edge('M690 254 C 660 320, 600 350, 542 372', 'dim', 612, 318, 'PSACCESSLOG')}
+      ${edge('M760 254 L 762 356', 'dim', 770, 312, 'node auth, no Okta')}
+      ${edge('M840 392 L 982 392', 'dim', 852, 384, 'banks / feeds')}
+      ${node('node-dir', 20, 30, 150, 60, 'Directory', 'AD / LDAP')}
+      ${node('node-okta', 230, 30, 180, 60, 'Okta Identity Engine', 'policies · MFA · risk', true)}
+      ${node('node-desk', 470, 30, 150, 60, 'Service desk', 'enroll · recover')}
+      ${node('node-users', 20, 190, 120, 64, 'Users', '6 populations')}
+      ${node('node-gateway', 160, 190, 170, 64, p.gw[0], p.gw[1], true)}
+      ${node('node-lb', 350, 190, 125, 64, 'Load balancer', 'gateway-only')}
+      ${node('node-web', 500, 190, 150, 64, 'PIA web server', 'WebLogic · profile')}
+      ${node('node-app', 670, 190, 140, 64, 'App server', 'Tuxedo · sign-on')}
+      ${node('node-db', 830, 190, 150, 64, 'Database', 'PSOPRDEFN · roles')}
+      ${node('node-siem', 380, 358, 160, 64, 'SIEM', 'logs · 1 year')}
+      ${node('node-ib', 690, 358, 150, 64, 'Integration Broker', 'nodes · batch')}`;
+    $('#archNote').textContent = p.note;
+    $$('.arch-ctrl .seg').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pat === state.pattern)));
+  }
+  $$('.arch-ctrl .seg').forEach((b) => b.addEventListener('click', () => { state.pattern = b.dataset.pat; save(); drawArch(); }));
+
+  /* ---------- scorer ---------- */
+  function renderWeights() {
+    $('#weights').innerHTML = CRITERIA.map((c) => `
+      <div class="wrow"><label for="w-${c.id}">${c.label}</label>
+        <input type="range" id="w-${c.id}" min="0" max="5" step="1" value="${state.weights[c.id]}" data-c="${c.id}" aria-valuetext="weight ${state.weights[c.id]}">
+        <span class="mono num" id="wv-${c.id}">${state.weights[c.id]}</span></div>`).join('');
+    $$('#weights input').forEach((i) => i.addEventListener('input', () => {
+      state.weights[i.dataset.c] = +i.value; $('#wv-' + i.dataset.c).textContent = i.value; save(); renderBars(); renderKpis(false);
+    }));
+  }
+  function renderBars() {
+    const sc = scores(); const max = Math.max(...sc.map((s) => s.total)); const L = leader();
+    const maxPossible = CRITERIA.reduce((a, c) => a + 5 * state.weights[c.id], 0) || 1;
+    $('#bars').innerHTML = sc.map((s) => `
+      <div class="bar-row${s.id === L.id ? ' lead' : ''}">
+        <div class="bar-top"><span><b>${s.id} · ${esc(s.name)}</b> <span class="muted">${esc(s.sub)}</span></span><span class="mono num">${s.total} pts${s.id === L.id ? ' · leader' : ''}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(s.total / maxPossible * 100).toFixed(1)}%"></div></div>
+      </div>`).join('') + `<p class="hint">Max possible with these weights: ${maxPossible} pts. ${max - sc.filter((s) => s.id !== L.id).reduce((a, b) => Math.max(a, b.total), 0) <= 3 ? 'Close call — record the deciding assumption.' : 'Clear leader at these weights.'}</p>`;
+    $$('.release .seg').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.rel === state.release)));
+  }
+  $$('.release .seg').forEach((b) => b.addEventListener('click', () => { state.release = b.dataset.rel; save(); renderBars(); renderKpis(false); }));
+  $('#patCards').innerHTML = [['pat-A', 'A · Native SAML 2.0'], ['pat-B', 'B · Okta Access Gateway'], ['pat-C', 'C · Web-tier agent'], ['pat-D', 'D · Transaction step-up (add-on)']]
+    .map(([k, t]) => `<div class="glass pad clickable" style="box-shadow:none" ${drillAttrs(k)}><h3>${t}</h3><span class="hint">Open detail →</span></div>`).join('');
+
+  /* ---------- checklist ---------- */
+  function renderChecks() {
+    const groups = [...new Set(CHECKS.map((c) => c[0]))];
+    $('#checks').innerHTML = groups.map((g) => `<div class="glass pad chk-group"><h3>${g}</h3>${CHECKS.map((c, i) => c[0] !== g ? '' : `
+      <label class="chk" for="chk-${i}"><input type="checkbox" id="chk-${i}" data-i="${i}" ${state.checks[i] ? 'checked' : ''}><span>${esc(c[1])}<span class="why">${esc(c[2])}</span></span></label>`).join('')}</div>`).join('');
+    $$('#checks input').forEach((i) => i.addEventListener('change', () => { state.checks[i.dataset.i] = i.checked; save(); updateChecks(); renderKpis(false); }));
+    updateChecks();
+  }
+  function updateChecks() {
+    const n = Object.values(state.checks).filter(Boolean).length;
+    $('#chkCount').textContent = `${n} of ${CHECKS.length} answered`;
+    $('#chkBar').style.width = (n / CHECKS.length * 100) + '%';
+  }
+
+  /* ---------- policy ---------- */
+  $('#pops').innerHTML = [['pop-general', 'General finance users', 'AAL2 · push / FastPass', 'ok'], ['pop-approver', 'Approvers', 'Phishing-resistant + step-up', 'warn'], ['pop-admin', 'Administrators', 'AAL3-strength · every sign-in', 'crit'], ['pop-remote', 'Off-network', 'Okta Verify only', 'ok'], ['pop-service', 'Service accounts', 'No interactive sign-in', 'crit'], ['pop-emergency', 'Emergency access', 'Vaulted · 24 h expiry', 'crit']]
+    .map(([k, t, s, sev]) => `<div class="glass kpi clickable" ${drillAttrs(k)}><span class="k-label">Population</span><h3 style="font-size:15px">${t}</h3><span class="k-sub">${s}</span><span class="pill ${sev}" style="align-self:flex-start;margin-top:6px">${sev === 'ok' ? 'standard' : sev === 'warn' ? 'elevated' : 'restricted'}</span></div>`).join('');
+  $('#rules').innerHTML = RULES.map((r) => `<tr><td class="mono">${r[0]}</td><td><b>${esc(r[1])}</b></td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('');
+  $('#auths').innerHTML = AUTHENTICATORS.map((a) => `<tr><td><b>${esc(a[0])}</b></td><td>${esc(a[1])}</td><td><span class="pill ${a[2]}">${a[2] === 'ok' ? 'enabled' : a[2] === 'warn' ? 'recovery' : 'off'}</span></td></tr>`).join('');
+
+  /* ---------- PeopleSoft mapping ---------- */
+  $('#psCards').innerHTML = [['ps-oprid', 'Okta login ↔ OPRID', 'One-to-one mapping, verified each wave'], ['ps-webprofile', 'Web profile & sessions', 'Timeouts, logout to Okta, secure cookies'], ['ps-signon', 'Sign-on PeopleCode', 'Header trust only from the gateway'], ['ps-roles', 'Roles & permission lists', 'Drive Okta population membership'], ['ps-ib', 'Integration Broker', 'Node authentication, never Okta'], ['ps-bypass', 'Bypass paths', 'Direct PIA, two-tier, shared tokens']]
+    .map(([k, t, s]) => `<div class="glass pad clickable" ${drillAttrs(k)}><h3>${t}</h3><p class="muted" style="margin-top:4px">${s}</p><span class="hint">Open detail →</span></div>`).join('');
+  $('#roles').innerHTML = ROLES.map((r) => `<tr><td><b>${esc(r[0])}</b></td><td><span class="pill ${r[1] === 'Privileged' || r[1] === 'Service' ? 'crit' : r[1] === 'High' ? 'warn' : 'ok'}">${r[1]}</span></td><td>${esc(r[2])}</td></tr>`).join('');
+  $('#stds').innerHTML = STANDARDS.map((s) => `<tr><td><b>${esc(s[0])}</b></td><td class="mono" style="font-size:12px">${esc(s[1])}</td><td>${esc(s[2])}</td></tr>`).join('');
+
+  /* ---------- test plan ---------- */
+  const CATS = ['All', ...new Set(TESTS.map((t) => t[1]))];
+  function renderFilters() {
+    $('#filters').innerHTML = CATS.map((c) => `<button class="seg" type="button" data-f="${c}" aria-pressed="${state.filter === c}">${c}${c === 'All' ? ' · 60' : ' · ' + TESTS.filter((t) => t[1] === c).length}</button>`).join('');
+    $$('#filters .seg').forEach((b) => b.addEventListener('click', () => { state.filter = b.dataset.f; save(); renderFilters(); renderTests(); }));
+  }
+  const LABEL = { none: 'Not run', pass: 'Pass', fail: 'Fail' };
+  function renderTests() {
+    $('#testRows').innerHTML = TESTS.filter((t) => state.filter === 'All' || t[1] === state.filter).map((t) => {
+      const s = state.tests[t[0]] || 'none';
+      return `<tr><td class="mono" style="white-space:nowrap">${t[0]}</td><td class="hint" style="white-space:nowrap">${t[1]}</td><td><b>${esc(t[2])}</b></td><td>${esc(t[3])}</td><td><span class="pill ${t[4] === 'High' ? 'warn' : t[4] === 'Medium' ? 'info' : 'ok'}" style="animation:none">${t[4]}</span></td><td class="mono">${t[5]}</td><td><button class="status-btn" type="button" data-t="${t[0]}" data-s="${s}" aria-label="Status for ${t[0]}: ${LABEL[s]}">${LABEL[s]}</button></td></tr>`;
+    }).join('');
+    $$('#testRows .status-btn').forEach((b) => b.addEventListener('click', () => {
+      const cur = state.tests[b.dataset.t] || 'none';
+      const nxt = cur === 'none' ? 'pass' : cur === 'pass' ? 'fail' : 'none';
+      if (nxt === 'none') delete state.tests[b.dataset.t]; else state.tests[b.dataset.t] = nxt;
+      save(); b.dataset.s = nxt; b.textContent = LABEL[nxt]; b.setAttribute('aria-label', `Status for ${b.dataset.t}: ${LABEL[nxt]}`);
+      updateTestChart(); renderKpis(false);
+    }));
+  }
+  $('#resetTests').addEventListener('click', () => { state.tests = {}; save(); renderTests(); updateTestChart(); renderKpis(false); });
+  function testCounts() {
+    const cats = CATS.slice(1);
+    const c = { pass: [], fail: [], none: [] };
+    cats.forEach((cat) => {
+      const ts = TESTS.filter((t) => t[1] === cat);
+      const p = ts.filter((t) => state.tests[t[0]] === 'pass').length, f = ts.filter((t) => state.tests[t[0]] === 'fail').length;
+      c.pass.push(p); c.fail.push(f); c.none.push(ts.length - p - f);
+    });
+    return { cats, c };
+  }
+
+  /* ---------- cutover ---------- */
+  function renderTree() {
+    const Q = [['q1', 'Sign-in success below 97% for 30 minutes, or a critical finance process (payment run, close) blocked?'], ['q2', 'Cause isolated to a configuration fix that can be made and re-tested within 60 minutes?'], ['q3', 'Okta or the gateway itself unavailable?']];
+    const a = state.tree;
+    let v;
+    if (a.q3 === 'yes') v = ['back', 'Use emergency access for critical finance work now. If the outage passes 15 minutes, roll back the wave to the pre-MFA sign-on path and notify users.'];
+    else if (a.q1 === 'no') v = ['go', 'Continue. Keep the hypercare bridge open and tune policies within change control.'];
+    else if (a.q2 === 'yes') v = ['hold', 'Hold the next wave and fix forward under emergency change; re-run smoke tests TC-01 to TC-08 before closing.'];
+    else v = ['back', 'Roll back the wave: move the group to the pre-enforcement rule (pattern A: disable SAML in the web profile; pattern B: switch the load-balancer pool), confirm sign-on, and notify users.'];
+    $('#tree').innerHTML = Q.map(([k, q]) => `<div class="q"><span style="flex:1 1 260px">${q}</span><span class="opts" role="group" aria-label="${q}">${['no', 'yes'].map((o) => `<button class="seg" type="button" data-q="${k}" data-o="${o}" aria-pressed="${a[k] === o}">${o === 'yes' ? 'Yes' : 'No'}</button>`).join('')}</span></div>`).join('') +
+      `<div class="verdict ${v[0]}"><span class="pill ${v[0] === 'go' ? 'ok' : v[0] === 'hold' ? 'warn' : 'crit'}" style="margin-right:8px">${v[0] === 'go' ? 'Go' : v[0] === 'hold' ? 'Hold' : 'Roll back'}</span>${v[1]}</div>`;
+    $$('#tree .seg').forEach((b) => b.addEventListener('click', () => { state.tree[b.dataset.q] = b.dataset.o; save(); renderTree(); }));
+  }
+  $('#runbook').innerHTML = RUNBOOK.map((r) => `<tr><td class="mono" style="white-space:nowrap">${r[0]}</td><td>${esc(r[1])}</td><td><b>${esc(r[2])}</b></td></tr>`).join('');
+
+  /* ---------- monitoring ---------- */
+  $('#dets').innerHTML = DETECTIONS.map((d) => `<tr><td><b>${esc(d[0])}</b></td><td>${esc(d[1])}</td><td><span class="pill ${d[2]}">${d[2] === 'crit' ? 'critical' : d[2] === 'warn' ? 'high' : 'info'}</span></td></tr>`).join('');
+  $('#events').innerHTML = EVENTS.map((e) => `<tr><td class="mono">${e[0]}</td><td>${esc(e[1])}</td><td>${esc(e[2])}</td></tr>`).join('');
+
+  /* ---------- roadmap ---------- */
+  const PH = [['ph-0', 'Mobilize & assess', 1, 3], ['ph-1', 'Design', 3, 6], ['ph-2', 'Build & configure', 6, 10], ['ph-3', 'Test', 9, 13], ['ph-4', 'Pilot', 13, 15], ['ph-5', 'Production waves', 15, 22], ['ph-6', 'Stabilize', 22, 25], ['ph-7', 'Transition & enhance', 25, 30]];
+  $('#gantt').innerHTML = `<div class="g-scale"><span></span><span class="g-ticks">${[1, 5, 10, 15, 20, 25, 30].map((m) => `<span>M${m}</span>`).join('')}</span></div>` +
+    PH.map(([k, n, s, e], i) => `<div class="g-row"><span style="font-size:13px"><b>${i}</b> · ${n}</span><div class="g-track"><div class="g-bar" ${drillAttrs(k)} style="left:${((s - 1) / 30 * 100).toFixed(2)}%;width:${((e - s + 1) / 30 * 100).toFixed(2)}%">M${s}–M${e}</div></div></div>`).join('');
+
+  /* ---------- RAID ---------- */
+  $('#risks').innerHTML = RISKS.map((r) => `<tr><td class="mono">${r[0]}</td><td><b>${esc(r[1])}</b></td><td><span class="pill ${r[4]}">${r[2]}</span></td><td>${esc(r[3])}</td></tr>`).join('');
+  $('#deps').innerHTML = DEPENDENCIES.map((d) => `<tr><td><b>${esc(d[0])}</b></td><td>${esc(d[1])}</td></tr>`).join('');
+
+  /* ---------- KT ---------- */
+  $('#deliv').innerHTML = DELIVERABLES.map((d, i) => `<div class="glass pad"><span class="hint">Deliverable ${i + 1}</span><h3 style="margin-top:4px">${esc(d[0])}</h3><p class="muted" style="margin-top:4px">${esc(d[1])}</p></div>`).join('');
+
+  /* ---------- coverage ---------- */
+  const SECNAME = { assess: 'Current state', decision: 'Pattern decision', policy: 'Okta policy', psmap: 'PeopleSoft mapping', tests: 'Test plan', cutover: 'Waves & rollback', access: 'Access & standards', monitor: 'Logging & monitoring', kt: 'Knowledge transfer', raid: 'Risks & dependencies', roadmap: '30-month roadmap', candidate: 'Candidate', architecture: 'Architecture' };
+  $('#cov').innerHTML = COVERAGE.map((c) => `<tr><td class="mono" style="white-space:nowrap">${esc(c[0])}</td><td><b>${esc(c[1])}</b></td><td><a href="#${c[2]}">${SECNAME[c[2]]}</a></td><td>${esc(c[3])}</td></tr>`).join('');
+
+  /* ---------- copy ---------- */
+  function copyBtn(btnId, preId) {
+    $(btnId).addEventListener('click', () => {
+      const text = $(preId).textContent, b = $(btnId);
+      const done = (ok) => { b.textContent = ok ? 'Copied' : 'Select text'; setTimeout(() => { b.textContent = 'Copy'; }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => done(true), () => { selectText($(preId)); done(false); });
+      else { selectText($(preId)); done(false); }
+    });
+  }
+  function selectText(el) { const r = document.createRange(); r.selectNodeContents(el); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+  copyBtn('#copyTf', '#tfCode'); copyBtn('#copySql', '#sqlCode');
+
+  /* ---------- charts ---------- */
+  const charts = {};
+  function baseOpts(stacked) {
+    const text = css('--text-2'), grid = css('--grid');
+    return {
+      responsive: true, maintainAspectRatio: false, animation: reduce ? false : { duration: 600 },
+      plugins: { legend: { labels: { color: text, boxWidth: 12, font: { family: 'Inter' } } }, tooltip: { mode: 'index', intersect: false } },
+      scales: { x: { stacked, ticks: { color: text }, grid: { color: grid } }, y: { stacked, beginAtZero: true, ticks: { color: text, precision: 0 }, grid: { color: grid } } },
+    };
+  }
+  function buildCharts() {
+    if (typeof Chart === 'undefined') { $$('.chart-box').forEach((b) => { b.innerHTML = '<p class="hint">Charts load from the Chart.js CDN on first visit.</p>'; }); return; }
+    const { cats, c } = testCounts();
+    charts.test = new Chart($('#testChart'), { type: 'bar', data: { labels: cats, datasets: [
+      { label: 'Pass', data: c.pass, backgroundColor: css('--ok') },
+      { label: 'Fail', data: c.fail, backgroundColor: css('--crit') },
+      { label: 'Not run', data: c.none, backgroundColor: css('--border-bright') }] }, options: baseOpts(true) });
+    let cum = 0; const cumul = WAVES.map((w) => (cum += w[2]));
+    charts.wave = new Chart($('#waveChart'), { data: { labels: WAVES.map((w) => w[0]), datasets: [
+      { type: 'bar', label: 'Users in wave', data: WAVES.map((w) => w[2]), backgroundColor: css('--accent'), yAxisID: 'y' },
+      { type: 'line', label: 'Cumulative enforced', data: cumul, borderColor: css('--gold'), backgroundColor: css('--gold'), tension: .3, yAxisID: 'y1', pointRadius: 3 }] },
+      options: Object.assign(baseOpts(false), { scales: Object.assign(baseOpts(false).scales, { y1: { position: 'right', beginAtZero: true, ticks: { color: css('--text-2') }, grid: { drawOnChartArea: false } } }) }) });
+    charts.tel = new Chart($('#telChart'), { type: 'line', data: { labels: TELEMETRY_DAYS, datasets: [
+      { label: 'Successful MFA sign-ins', data: TELEMETRY.success, borderColor: css('--accent'), backgroundColor: css('--accent') + '22', fill: true, tension: .3, pointRadius: 2 },
+      { label: 'Failed MFA', data: TELEMETRY.failed, borderColor: css('--warn'), backgroundColor: css('--warn'), tension: .3, pointRadius: 2 },
+      { label: 'Lockouts', data: TELEMETRY.locks, borderColor: css('--crit'), backgroundColor: css('--crit'), tension: .3, pointRadius: 2 }] }, options: baseOpts(false) });
+    updateTestChart();
+  }
+  function updateTestChart() {
+    const { c } = testCounts();
+    const p = Object.values(state.tests).filter((v) => v === 'pass').length, f = Object.values(state.tests).filter((v) => v === 'fail').length;
+    $('#testSummary').textContent = `${p} passed · ${f} failed · ${60 - p - f} not run. Gate for a wave: every High case passed and no open Fail.`;
+    if (!charts.test) return;
+    charts.test.data.datasets[0].data = c.pass; charts.test.data.datasets[1].data = c.fail; charts.test.data.datasets[2].data = c.none; charts.test.update();
+  }
+  function repaintCharts() {
+    Object.values(charts).forEach((ch) => ch.destroy());
+    Object.keys(charts).forEach((k) => delete charts[k]);
+    buildCharts(); drawArch(); renderKpis(false);
+  }
+  if (window.matchMedia) {
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+    if (mq.addEventListener) mq.addEventListener('change', repaintCharts);
+  }
+
+  /* ---------- boot ---------- */
+  renderKpis(true); drawArch(); renderWeights(); renderBars(); renderChecks(); renderFilters(); renderTests(); renderTree(); buildCharts();
+  const h = (location.hash || '').slice(1);
+  if (h && /^[A-Za-z0-9._~-]+$/.test(h) && document.getElementById(h)) setTimeout(() => document.getElementById(h).scrollIntoView(), 50);
+})();
+
+</script>
+</body>
+</html>

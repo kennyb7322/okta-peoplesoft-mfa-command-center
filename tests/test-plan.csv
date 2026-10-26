@@ -1,0 +1,61 @@
+id,category,scenario,expected_result,priority,pattern,status
+TC-01,Sign-on,SP-initiated sign-on from the PeopleSoft URL redirects to Okta and returns to the PeopleSoft home page,User lands on home page with correct OPRID,High,All,Not run
+TC-02,Sign-on,IdP-initiated sign-on from the Okta dashboard tile,User lands on PeopleSoft home page,High,All,Not run
+TC-03,Sign-on,Deep link to a component (voucher entry) before sign-in,Target component opens after Okta sign-in,High,All,Not run
+TC-04,Sign-on,Okta login maps to the correct OPRID,PeopleSoft session shows the matching user,High,All,Not run
+TC-05,Sign-on,Okta user with no matching OPRID,Clear error; no PeopleSoft session created,High,All,Not run
+TC-06,Sign-on,PeopleSoft account locked (ACCTLOCK = 1) after Okta success,Sign-in refused and logged,High,All,Not run
+TC-07,Sign-on,Fluid and Classic pages after sign-on,Both render without re-authentication,Medium,All,Not run
+TC-08,Sign-on,Sign-on through each load-balanced web server,Succeeds on every node,Medium,All,Not run
+TC-09,Sign-on,"Supported browsers (Edge, Chrome, Firefox, Safari)",Sign-on succeeds in each,Medium,All,Not run
+TC-10,Sign-on,Concurrent sessions in two browsers,Behaves per session policy,Low,All,Not run
+TC-11,Enrollment,First sign-in before enrollment,Enrollment forced; PeopleSoft not reachable until complete,High,All,Not run
+TC-12,Enrollment,Okta Verify push with number challenge,Challenge shown; correct number approves,High,All,Not run
+TC-13,Enrollment,Okta FastPass on a managed Windows device,Enrolls and signs in silently,Medium,All,Not run
+TC-14,Enrollment,FIDO2 key enrollment for a privileged user,Key registered; required by admin rule,High,All,Not run
+TC-15,Enrollment,User without a smartphone receives a FIDO2 key,Enrolls key with service desk help,Medium,All,Not run
+TC-16,Enrollment,SMS / voice offered as primary factor,Not offered,Medium,All,Not run
+TC-17,Enrollment,Enrollment window ends for the wave,Enforcement begins on schedule,High,All,Not run
+TC-18,Enrollment,Enrollment instructions and help text,Correct agency-specific guidance shown,Low,All,Not run
+TC-19,Access,General finance user after cutover,Same components and pages as before cutover,High,All,Not run
+TC-20,Access,AP payment approver signs in,Prompted for phishing-resistant factor per policy,High,All,Not run
+TC-21,Access,Security administrator signs in,FIDO2 or FastPass with biometrics required every time,High,All,Not run
+TC-22,Access,Application Designer two-tier connection,Allowed only from approved admin network,High,All,Not run
+TC-23,Access,Row-level security (business unit / SetID),Results unchanged pre and post cutover,High,All,Not run
+TC-24,Access,Query security trees,Same query results pre and post cutover,Medium,All,Not run
+TC-25,Access,Self-service user signs in,Follows general user policy,Medium,All,Not run
+TC-26,Access,Terminated user with valid PeopleSoft password,Deactivated in Okta; cannot reach PeopleSoft,High,All,Not run
+TC-27,Recovery,Lost phone: service desk factor reset,Identity verified; reset; user re-enrolls,High,All,Not run
+TC-28,Recovery,Self-service recovery,Only approved recovery factors offered,High,All,Not run
+TC-29,Recovery,Temporary access code,Expires after configured window,Medium,All,Not run
+TC-30,Recovery,Recovery with failed identity verification,Refused and logged,High,All,Not run
+TC-31,Recovery,Factor reset event,Visible in SIEM within 5 minutes,Medium,All,Not run
+TC-32,Recovery,PeopleSoft password reset (if passwords remain),Does not bypass MFA,High,All,Not run
+TC-33,Exceptions,Approved time-boxed exception,Applies to named user only; expires automatically,High,All,Not run
+TC-34,Exceptions,Exception without approval record,Cannot be added to exception group,Medium,All,Not run
+TC-35,Exceptions,Emergency account during simulated Okta outage,Signs in under procedure,High,All,Not run
+TC-36,Exceptions,Emergency account use,SIEM alert raised immediately,High,All,Not run
+TC-37,Exceptions,Emergency account after 24 hours,Disabled automatically,High,All,Not run
+TC-38,Exceptions,Service account interactive sign-in,Denied,High,All,Not run
+TC-39,Session,PeopleSoft inactivity warning and timeout,Fire per web profile,High,All,Not run
+TC-40,Session,"Expired Okta session, next PeopleSoft navigation",Re-authentication required,Medium,All,Not run
+TC-41,Session,PeopleSoft sign-out,Session ends; redirect to Okta sign-out,High,All,Not run
+TC-42,Session,Okta sign-out,PeopleSoft gateway / SAML session invalidated,Medium,All,Not run
+TC-43,Session,Long journal entry near timeout,Warning shown; extending keeps the data,Medium,All,Not run
+TC-44,Session,Session cookies,"Secure, HttpOnly, and SameSite set",High,All,Not run
+TC-45,Integration,Integration Broker inbound from external nodes,Messages process normally,High,All,Not run
+TC-46,Integration,Integration Broker outbound,Unaffected,High,All,Not run
+TC-47,Integration,Process Scheduler jobs,Run under scheduled user IDs with no interactive MFA,High,All,Not run
+TC-48,Integration,Scheduled nVision and Query,Complete on schedule,Medium,All,Not run
+TC-49,Integration,Bank and payment interfaces (month-end simulation),Run on schedule,High,All,Not run
+TC-50,Integration,Workflow approval email deep link,Routes through Okta to the worklist,Medium,All,Not run
+TC-51,Integration,REST / web-service consumers,"Authenticate with node credentials, not Okta",High,All,Not run
+TC-52,Integration,Directory and provisioning sync,Continues to update user profiles,Medium,All,Not run
+TC-53,Negative,Direct PIA URL bypassing the gateway,Blocked,High,B / C,Not run
+TC-54,Negative,Forged identity header from a non-gateway source,Ignored by sign-on PeopleCode; logged,High,B / C,Not run
+TC-55,Negative,Replayed SAML assertion,Rejected,High,A,Not run
+TC-56,Negative,Repeated push denials (MFA fatigue),Lockout and SIEM alert,High,All,Not run
+TC-57,Negative,Sign-in from a blocked network zone,Denied,Medium,All,Not run
+TC-58,Negative,Non-compliant device on privileged rule,Fails device assurance,Medium,All,Not run
+TC-59,Negative,PS_TOKEN from non-production presented to production,Not accepted,High,All,Not run
+TC-60,Negative,Okta admin console policy change,Logged and alerted,Medium,All,Not run
